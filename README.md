@@ -159,7 +159,8 @@ product dogfoods the policy it governs with.
 **Shipped:**
 
 - `@lou/state-machine` — deterministic, bounded workflow engine (phases, commands,
-  transition rules, iteration budgets).
+  transition rules, iteration budgets) with explicit human approval gates for the plan
+  and the review.
 - `@lou/opencode-runtime` — the `AgentRuntime` port plus an `OpenCodeRuntime` adapter
   driving the `opencode run` CLI (spawn, timeout, abort, status).
 - `@lou/command-runner` — shared `CommandRunner` port and Node spawn implementation
@@ -210,7 +211,7 @@ lou/
 │   └── cli/                      # the `lou` CLI (roadmap)
 ├── packages/
 │   ├── core/
-│   │   ├── state-machine/        # deterministic, bounded workflow engine
+│   │   ├── state-machine/        # workflow engine + human approval gates
 │   │   ├── constitution/         # persistent project rules model + store
 │   │   ├── command-runner/       # shared CommandRunner port + Node spawn impl
 │   │   └── test-runner/          # runs the project tests, verification over trust

@@ -46,6 +46,76 @@ describe('Workflow', () => {
     expect(workflow.phase).toBe(PHASES.QUESTIONS);
   });
 
+  it('requires a proposed plan before it can be approved', () => {
+    const workflow = new Workflow();
+    workflow.apply(COMMANDS.START_DISCOVERY);
+    workflow.apply(COMMANDS.FINISH_DISCOVERY);
+    workflow.apply(COMMANDS.FINISH_QUESTIONS);
+
+    const early = workflow.apply(COMMANDS.APPROVE_PLAN);
+
+    expect(early.status).toBe('rejected');
+    expect(workflow.phase).toBe(PHASES.PLAN);
+
+    workflow.apply(COMMANDS.PLAN_PROPOSED);
+    expect(workflow.phase).toBe(PHASES.PLAN_APPROVAL);
+
+    const approved = workflow.apply(COMMANDS.APPROVE_PLAN);
+
+    expect(approved.status).toBe('accepted');
+    expect(workflow.phase).toBe(PHASES.TEST_DESIGN);
+  });
+
+  it('sends a rejected plan back to planning and bounds the loop', () => {
+    const workflow = new Workflow();
+    workflow.apply(COMMANDS.START_DISCOVERY);
+    workflow.apply(COMMANDS.FINISH_DISCOVERY);
+    workflow.apply(COMMANDS.FINISH_QUESTIONS);
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      workflow.apply(COMMANDS.PLAN_PROPOSED);
+      workflow.apply(COMMANDS.REJECT_PLAN);
+      expect(workflow.phase).toBe(PHASES.PLAN);
+    }
+    workflow.apply(COMMANDS.PLAN_PROPOSED);
+
+    const result = workflow.apply(COMMANDS.REJECT_PLAN);
+
+    expect(result.status).toBe('intervention-required');
+    expect(workflow.phase).toBe(PHASES.HUMAN_INTERVENTION_REQUIRED);
+    expect(workflow.isTerminal).toBe(true);
+  });
+
+  it('requires human approval after review before the PR', () => {
+    const workflow = new Workflow();
+    for (const command of UP_TO_REVIEW_COMMANDS) {
+      workflow.apply(command);
+    }
+    workflow.apply(COMMANDS.REVIEW_APPROVED);
+    expect(workflow.phase).toBe(PHASES.REVIEW_APPROVAL);
+
+    const early = workflow.apply(COMMANDS.PR_MERGED);
+
+    expect(early.status).toBe('rejected');
+
+    workflow.apply(COMMANDS.APPROVE_REVIEW);
+    expect(workflow.phase).toBe(PHASES.PR_CREATED);
+  });
+
+  it('sends a rejected review back to implementation', () => {
+    const workflow = new Workflow();
+    for (const command of UP_TO_REVIEW_COMMANDS) {
+      workflow.apply(command);
+    }
+    workflow.apply(COMMANDS.REVIEW_APPROVED);
+    expect(workflow.phase).toBe(PHASES.REVIEW_APPROVAL);
+
+    const result = workflow.apply(COMMANDS.REJECT_REVIEW);
+
+    expect(result.status).toBe('accepted');
+    expect(workflow.phase).toBe(PHASES.IMPLEMENTATION);
+  });
+
   it('rejects commands once the workflow is terminal', () => {
     const workflow = new Workflow();
 
@@ -64,6 +134,7 @@ describe('Workflow', () => {
     workflow.apply(COMMANDS.START_DISCOVERY);
     workflow.apply(COMMANDS.FINISH_DISCOVERY);
     workflow.apply(COMMANDS.FINISH_QUESTIONS);
+    workflow.apply(COMMANDS.PLAN_PROPOSED);
     workflow.apply(COMMANDS.APPROVE_PLAN);
     workflow.apply(COMMANDS.TESTS_DESIGNED);
 
