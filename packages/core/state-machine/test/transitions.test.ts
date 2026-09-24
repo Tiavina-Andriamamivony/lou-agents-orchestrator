@@ -16,14 +16,14 @@ describe('transition table', () => {
   it('routes every outcome of the main flow without consuming iterations', () => {
     const forward = TRANSITION_RULES.filter((rule) => !rule.consumesIteration);
 
-    expect(forward).toHaveLength(11);
+    expect(forward).toHaveLength(13);
     expect(forward.every((rule) => rule.loopRegion === null)).toBe(true);
   });
 
   it('declares bounded loops only where the flow can regress', () => {
     const loops = TRANSITION_RULES.filter((rule) => rule.consumesIteration);
 
-    expect(loops).toHaveLength(4);
+    expect(loops).toHaveLength(5);
     for (const loop of loops) {
       expect(loop.loopRegion).not.toBeNull();
       expect(loop.loopRegion).toBe(loop.to);

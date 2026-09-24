@@ -11,7 +11,7 @@ use the **Lou** brand.
 ## Current state
 
 - `packages/core/state-machine/` — deterministic, bounded workflow engine (phases,
-  commands, transition rules, iteration budgets).
+  commands, transition rules, iteration budgets, human approval gates).
 - `packages/runtimes/opencode/` — the `AgentRuntime` port plus an `OpenCodeRuntime`
   adapter that drives the `opencode run` CLI (spawn, timeout, abort, status).
 - `packages/core/command-runner/` — the shared `CommandRunner` port (`CommandRunner` +
