@@ -107,6 +107,19 @@ importers:
         specifier: ^2.1.5
         version: 2.1.9(@types/node@22.20.4)
 
+  packages/integrations/github:
+    dependencies:
+      '@lou/command-runner':
+        specifier: workspace:*
+        version: link:../../core/command-runner
+    devDependencies:
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.5
+        version: 2.1.9(@types/node@22.20.4)
+
   packages/policy/engine:
     devDependencies:
       typescript:

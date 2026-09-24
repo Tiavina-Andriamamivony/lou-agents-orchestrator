@@ -166,6 +166,7 @@ product dogfoods the policy it governs with.
 - `@lou/command-runner` — shared `CommandRunner` port and Node spawn implementation
   reused by every adapter that shells out.
 - `@lou/git` — the git adapter: create branch, commit, push, current branch, clean check.
+- `@lou/github` — GitHub adapter on the `gh` CLI: fetch issues, open pull requests.
 - `@lou/test-runner` — runs the project test command itself and reports a pass/fail
   verdict (verification over trust, no agent assertion taken at face value).
 - `@lou/policy-engine` — `ALLOW / DENY / ASK_HUMAN` policy engine: destructive/risky
@@ -217,6 +218,8 @@ lou/
 │   │   └── test-runner/          # runs the project tests, verification over trust
 │   ├── git/
 │   │   └── src/                  # git adapter: branch, commit, push, clean check
+│   ├── integrations/
+│   │   └── github/               # gh CLI adapter: issues, pull requests
 │   ├── policy/
 │   │   └── engine/               # rules, risk classification, permissions
 │   ├── runtimes/
