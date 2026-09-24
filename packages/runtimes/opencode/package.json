@@ -1,0 +1,20 @@
+{
+  "name": "@add/opencode-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "AgentRuntime port and OpenCode adapter sitting above the opencode CLI.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "lint": "eslint src test",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.5"
+  }
+}

@@ -1,0 +1,131 @@
+import { describe, expect, it } from 'vitest';
+import { OpenCodeRuntime } from '../src/opencode-runtime';
+import { FakeRunner } from './fake-runner';
+
+const INPUT = {
+  runId: 'RUN-001',
+  agent: 'developer',
+  instructions: 'implement password reset',
+  workspace: '/tmp/add-demo',
+};
+
+const SUCCESS = { exitCode: 0, stdout: 'ok', stderr: '', interrupted: false };
+const ABORTED = { exitCode: -1, stdout: '', stderr: '', interrupted: true };
+
+describe('OpenCodeRuntime', () => {
+  it('invokes the opencode binary with the run command, agent and instructions', async () => {
+    const runner = new FakeRunner();
+    const runtime = new OpenCodeRuntime({ runner });
+
+    const pending = runtime.run(INPUT);
+    runner.complete(SUCCESS);
+    const result = await pending;
+
+    expect(result.runId).toBe('RUN-001');
+    expect(result.exitCode).toBe(0);
+    expect(runner.calls).toHaveLength(1);
+    expect(runner.calls[0]?.command).toBe('opencode');
+    expect(runner.calls[0]?.args).toEqual([
+      'run',
+      '--agent',
+      'developer',
+      '--print-logs',
+      'implement password reset',
+    ]);
+  });
+
+  it('passes the workspace as working directory and a default timeout', async () => {
+    const runner = new FakeRunner();
+    const runtime = new OpenCodeRuntime({ runner });
+
+    const pending = runtime.run(INPUT);
+    runner.complete(SUCCESS);
+    await pending;
+
+    expect(runner.calls[0]?.options.cwd).toBe(INPUT.workspace);
+    expect(runner.calls[0]?.options.timeoutMs).toBe(300_000);
+  });
+
+  it('honours a custom binary and model', async () => {
+    const runner = new FakeRunner();
+    const runtime = new OpenCodeRuntime({ runner, binary: 'opencode-next' });
+
+    const pending = runtime.run({ ...INPUT, model: 'gpt-5' });
+    runner.complete(SUCCESS);
+    await pending;
+
+    expect(runner.calls[0]?.command).toBe('opencode-next');
+    expect(runner.calls[0]?.args).toContain('--model');
+  });
+
+  it('records a running status while the run is in flight', async () => {
+    const runner = new FakeRunner();
+    const runtime = new OpenCodeRuntime({ runner });
+
+    const pending = runtime.run(INPUT);
+    const running = await runtime.getStatus(INPUT.runId);
+    runner.complete(SUCCESS);
+    await pending;
+
+    expect(running.running).toBe(true);
+    expect(running.finished).toBe(false);
+    const done = await runtime.getStatus(INPUT.runId);
+    expect(done.running).toBe(false);
+    expect(done.finished).toBe(true);
+    expect(done.exitCode).toBe(0);
+  });
+
+  it('returns a default status for an unknown run', async () => {
+    const runtime = new OpenCodeRuntime({ runner: new FakeRunner() });
+
+    const status = await runtime.getStatus('UNKNOWN');
+
+    expect(status.running).toBe(false);
+    expect(status.finished).toBe(false);
+  });
+
+  it('aborts the run through the abort signal when interrupted', async () => {
+    const runner = new FakeRunner();
+    const runtime = new OpenCodeRuntime({ runner });
+
+    const pending = runtime.run(INPUT);
+    const signal = runner.calls[0]?.options.signal;
+    expect(signal?.aborted).toBe(false);
+    await runtime.interrupt(INPUT.runId);
+    expect(signal?.aborted).toBe(true);
+    runner.complete(ABORTED);
+    const result = await pending;
+
+    expect(result.interrupted).toBe(true);
+  });
+
+  it('clears the running flag when the runner fails', async () => {
+    const runner = new FakeRunner();
+    const runtime = new OpenCodeRuntime({ runner });
+
+    const pending = runtime.run(INPUT);
+    runner.fail(new Error('spawn failed'));
+    await expect(pending).rejects.toThrow('spawn failed');
+
+    const status = await runtime.getStatus(INPUT.runId);
+    expect(status.running).toBe(false);
+  });
+
+  it('rejects an empty instruction set', async () => {
+    const runtime = new OpenCodeRuntime({ runner: new FakeRunner() });
+
+    await expect(runtime.run({ ...INPUT, instructions: '' })).rejects.toThrow('instructions');
+  });
+
+  it('rejects an empty workspace', async () => {
+    const runtime = new OpenCodeRuntime({ runner: new FakeRunner() });
+
+    await expect(runtime.run({ ...INPUT, workspace: '' })).rejects.toThrow('workspace');
+  });
+
+  it('rejects an empty run id', async () => {
+    const runtime = new OpenCodeRuntime({ runner: new FakeRunner() });
+
+    await expect(runtime.run({ ...INPUT, runId: '' })).rejects.toThrow('runId');
+  });
+});

@@ -9,9 +9,21 @@ no production code yet: the repo is tooling + the first core package.
 
 ## Current state
 
-- `packages/core/state-machine/` — the only implemented package: deterministic,bounded
-  workflow engine (phases, commands, transition rules, iteration budgets).
+- `packages/core/state-machine/` — deterministic, bounded workflow engine (phases,
+  commands, transition rules, iteration budgets).
+- `packages/runtimes/opencode/` — the `AgentRuntime` port plus an `OpenCodeRuntime`
+  adapter that drives the `opencode run` CLI (spawn, timeout, abort, status). This ships
+  `CommandRunner` (`CommandRunner` port + `NodeCommandRunner` + `RunningCommand`) in the
+  same package; it may move to a shared runtime package later.
 - Everything else in $47 (MVP) and the roadmap is scaffolding to be built.
+
+## Git workflow (from now on)
+
+- One feature per branch, named `feature/<kebab-case>` or `fix/<kebab-case>`, branched
+  off `main`. Push, open a PR (conventional title), wait for CI green, merge, delete the
+  branch. Main is protected: 1 approving review + the `Quality Gates` and
+  `Conventional Commits` checks are required (admin merges may bypass via
+  `gh pr merge --admin`).
 
 ## Developer commands (run from repo root)
 
