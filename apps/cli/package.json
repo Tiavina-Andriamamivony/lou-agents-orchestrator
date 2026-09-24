@@ -12,6 +12,16 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
+  "dependencies": {
+    "@lou/audit": "workspace:*",
+    "@lou/git": "workspace:*",
+    "@lou/github": "workspace:*",
+    "@lou/opencode-runtime": "workspace:*",
+    "@lou/orchestrator": "workspace:*",
+    "@lou/reviewer": "workspace:*",
+    "@lou/state-machine": "workspace:*",
+    "@lou/test-runner": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^5.6.3",
     "vitest": "^2.1.5"
