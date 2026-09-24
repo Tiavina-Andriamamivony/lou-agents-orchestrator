@@ -1,8 +1,8 @@
 {
-  "name": "agentic-driven-development",
+  "name": "lou-agents-orchestrator",
   "version": "0.1.0",
   "private": true,
-  "description": "Agentic-Driven Development: the engineering control plane for AI coding agents.",
+  "description": "Lou Agents Orchestrator: the governance layer for AI coding agents.",
   "type": "module",
   "engines": {
     "node": ">=22"

@@ -2,10 +2,11 @@
 
 ## What this repo is
 
-A pnpm monorepo for "Agentic-Driven Development (ADD)" — an orchestration/control-plane
-layer that governs and orchestrates development agents running inside OpenCode. The
-product spec (in French, `~2290 lines`) lives at `docs/cahier-des-charges.md`. There is
-no production code yet: the repo is tooling + the first core package.
+A pnpm monorepo for **Lou Agents Orchestrator** — a governance layer that orchestrates
+development agents running inside OpenCode. Product brand: **Lou**. The French product
+spec (`docs/cahier-des-charges.md`, `~2290 lines`) predates the brand and still calls the
+product "Agentic-Driven Development (ADD)" — treat **ADD ≡ Lou**. Code, docs and commits
+use the **Lou** brand.
 
 ## Current state
 
@@ -70,8 +71,9 @@ comments are errors; `eslint-disable` is limited and flags unused disables.
 
 - Language: the spec is written in **French**; new spec content should be written in
   French. Product code/commits stay in English.
-- Positioning: ADD is a control plane, not an IDE. `OpenCode exécute. ADD gouverne et
-orchestre.` Do not design it as a Cursor clone, LLM wrapper, or CRUD generator ($3).
+- Positioning: Lou is a control plane, not an IDE. `OpenCode exécute. ADD gouverne et
+orchestre.` (spec wording; brand: Lou). Do not design it as a Cursor clone, LLM wrapper,
+  or CRUD generator ($3).
 - Core principles that must not be violated ($4, $53): human-in-the-loop / human is final
   authority, least privilege per agent, test-first workflow, small blast radius,
   verification over trust ("tests pass" asserted by an agent is not proof — run them),
@@ -94,7 +96,7 @@ orchestre.` Do not design it as a Cursor clone, LLM wrapper, or CRUD generator (
 
 ## When adding a package
 
-- Use `packages/<area>/<name>` (or `apps/` for binaries), scoped as `@add/<name>`.
+- Use `packages/<area>/<name>` (or `apps/` for binaries), scoped as `@lou/<name>`.
 - Mirror the layout of `packages/core/state-machine/`: `src/` + `test/`, own
   `tsconfig.json` extending `tsconfig.base.json`, `vitest.config.ts`, own
   `lint`/`typecheck`/`test` scripts.
