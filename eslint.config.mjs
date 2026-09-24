@@ -12,9 +12,16 @@ export default tseslint.config(
       '**/coverage/**',
       '**/*.config.*',
       '**/.husky/**',
+      'apps/cli/bin/**',
     ],
   },
   js.configs.recommended,
+  {
+    files: ['**/*.{js,mjs,cjs}'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
   ...tseslint.configs.strictTypeChecked,
   {
     files: ['**/*.ts'],

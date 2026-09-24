@@ -42,6 +42,9 @@ use the **Lou** brand.
   markdown parse/serialize (deterministic), validation, and a `NodeConstitutionStore`
   persisting `.add/constitution.md`. Writing is explicit (`save()`); `/init` stays
   read-only ($6.3), so nothing is written without approval.
+- `apps/cli/` — the `lou` CLI: `lou init` performs read-only project onboarding
+  (§6.1–6.4): detects the stack, docs, CI, git conventions and constitution from the
+  filesystem and prints a report without modifying anything.
 - Everything else in $47 (MVP) and the roadmap is scaffolding to be built.
 
 ## Git workflow (from now on)

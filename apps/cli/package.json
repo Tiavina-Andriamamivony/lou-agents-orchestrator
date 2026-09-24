@@ -1,0 +1,19 @@
+{
+  "name": "@lou/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The `lou` CLI: read-only /init onboarding, then the ticket-to-PR commands (MVP).",
+  "bin": {
+    "lou": "./bin/lou.js"
+  },
+  "scripts": {
+    "lint": "eslint src test",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.5"
+  }
+}
