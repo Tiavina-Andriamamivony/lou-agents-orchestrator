@@ -1,3 +1,4 @@
+import { readFileSync, realpathSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { createNodeProjectReader } from './init/project-reader.ts';
 import type { ProjectReader } from './init/project-reader.ts';
@@ -10,6 +11,9 @@ Commands:
   init   Read-only project onboarding report (no modification).
   run    Drive a GitHub issue to a pull request: lou run <issue-number>.`;
 
+const HELP_COMMANDS = new Set(['--help', '-h', 'help']);
+const VERSION_COMMANDS = new Set(['--version', '-v']);
+
 export interface CliEnv {
   readonly reader: ProjectReader;
   readonly cwd: string;
@@ -17,24 +21,42 @@ export interface CliEnv {
   readonly err: (line: string) => void;
 }
 
-export function runCli(argv: readonly string[], env: CliEnv): Promise<number> {
-  const command = argv[0] ?? '';
-  if (command === 'init') {
-    return runInit({ reader: env.reader, root: env.cwd }).then((report) => {
+type CommandHandler = (argv: readonly string[], env: CliEnv) => Promise<number>;
+
+const COMMANDS: Record<string, CommandHandler> = {
+  init: (_argv, env) =>
+    runInit({ reader: env.reader, root: env.cwd }).then((report) => {
       env.out(report);
       return 0;
-    });
+    }),
+  run: handleRun,
+};
+
+function handleRun(argv: readonly string[], env: CliEnv): Promise<number> {
+  const issueNumber = readIssueNumber(argv[1]);
+  if (issueNumber === null) {
+    env.err('Usage: lou run <issue-number>');
+    return Promise.resolve(1);
   }
-  if (command === 'run') {
-    const issueNumber = readIssueNumber(argv[1]);
-    if (issueNumber === null) {
-      env.err('Usage: lou run <issue-number>');
-      return Promise.resolve(1);
-    }
-    return runProduction({ issueNumber, cwd: env.cwd, out: env.out }).catch((error: unknown) => {
-      env.err(`lou run failed: ${errorMessage(error)}`);
-      return 1;
-    });
+  return runProduction({ issueNumber, cwd: env.cwd, out: env.out }).catch((error: unknown) => {
+    env.err(`lou run failed: ${errorMessage(error)}`);
+    return 1;
+  });
+}
+
+export function runCli(argv: readonly string[], env: CliEnv): Promise<number> {
+  const command = argv[0] ?? '';
+  if (HELP_COMMANDS.has(command)) {
+    env.out(USAGE);
+    return Promise.resolve(0);
+  }
+  if (VERSION_COMMANDS.has(command)) {
+    env.out(`lou ${readVersion()}`);
+    return Promise.resolve(0);
+  }
+  const handler = COMMANDS[command];
+  if (handler !== undefined) {
+    return handler(argv, env);
   }
   env.err(command === '' ? USAGE : `Unknown command: ${command}\n\n${USAGE}`);
   return Promise.resolve(1);
@@ -49,8 +71,9 @@ export function main(argv?: readonly string[]): Promise<number> {
   });
 }
 
+const entryPath = process.argv[1];
 const isDirectRun =
-  process.argv[1] !== undefined && pathToFileURL(process.argv[1]).href === import.meta.url;
+  entryPath !== undefined && pathToFileURL(realpathSync(entryPath)).href === import.meta.url;
 if (isDirectRun) {
   main().then(
     (code) => process.exit(code),
@@ -63,4 +86,11 @@ function errorMessage(error: unknown): string {
     return error.message;
   }
   return 'unknown error';
+}
+
+function readVersion(): string {
+  const packageJson = JSON.parse(
+    readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+  ) as { readonly version?: string };
+  return packageJson.version ?? '0.0.0';
 }

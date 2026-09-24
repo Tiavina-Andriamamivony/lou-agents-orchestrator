@@ -213,6 +213,7 @@ French) — the design contract this repository implements.
 lou/
 ├── apps/
 │   └── cli/                      # the `lou` CLI (`lou init` onboarding, `lou run <issue>`)
+│       └── install/              # one-line installers: install.sh (Linux/macOS), install.ps1 (Windows)
 ├── packages/
 │   ├── core/
 │   │   ├── state-machine/        # workflow engine + human approval gates
@@ -239,6 +240,24 @@ lou/
 │   └── cahier-des-charges.md     # product specification (FR)
 └── .github/
 ```
+
+## Install
+
+One line, no toolchain to configure — the installer fetches the Lou sources, links the
+workspace packages and wires the `lou` launcher onto your PATH:
+
+```bash
+# Linux / macOS
+curl -fsSL https://raw.githubusercontent.com/Tiavina-Andriamamivony/lou-agents-orchestrator/main/apps/cli/install/install.sh | bash
+
+# Windows (PowerShell)
+irm https://raw.githubusercontent.com/Tiavina-Andriamamivony/lou-agents-orchestrator/main/apps/cli/install/install.ps1 | iex
+```
+
+Requirements: Node.js >= 22.7 (Node executes the TypeScript sources directly).
+Options: `--prefix <dir>`, `--version <tag|main>`, `--node <bin>`, `--quiet` (PowerShell:
+`-Prefix`, `-Version`, `-Node`, `-Quiet`). Re-run to upgrade; uninstall by removing the
+install directory and its PATH entry.
 
 ## Getting started
 
