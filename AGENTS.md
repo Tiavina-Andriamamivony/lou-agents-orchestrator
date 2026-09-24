@@ -20,6 +20,8 @@ use the **Lou** brand.
   push, current branch, clean check) driving the git CLI through the command runner.
 - `packages/core/test-runner/` — the `TestRunner` port plus a `NodeTestRunner` that runs
   the project test command and reports a pass/fail verdict (verification over trust, §4.6).
+- `packages/integrations/github/` — the `GitHubAdapter` port plus a `NodeGitHubAdapter`
+  driving the `gh` CLI: fetch issues and open pull requests.
 - `packages/policy/engine/` — the `PolicyEngine` port plus `DefaultPolicyEngine`: ordered
   rules with fail-closed default (`ALLOW/DENY/ASK_HUMAN`), destructive/risky patterns,
   production/secret/config guards, and role-based capability rules.
