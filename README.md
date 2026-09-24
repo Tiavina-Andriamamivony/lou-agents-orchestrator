@@ -218,7 +218,8 @@ lou/
 │   │   ├── state-machine/        # workflow engine + human approval gates
 │   │   ├── constitution/         # persistent project rules model + store
 │   │   ├── command-runner/       # shared CommandRunner port + Node spawn impl
-│   │   └── test-runner/          # runs the project tests, verification over trust
+│   │   ├── test-runner/          # runs the project tests, verification over trust
+│   │   └── sandbox/              # workspace confinement + policy gate per command
 │   ├── git/
 │   │   └── src/                  # git adapter: branch, commit, push, clean check
 │   ├── agents/
