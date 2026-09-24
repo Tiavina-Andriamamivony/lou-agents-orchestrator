@@ -15,6 +15,9 @@ no production code yet: the repo is tooling + the first core package.
   adapter that drives the `opencode run` CLI (spawn, timeout, abort, status). This ships
   `CommandRunner` (`CommandRunner` port + `NodeCommandRunner` + `RunningCommand`) in the
   same package; it may move to a shared runtime package later.
+- `packages/policy/engine/` — the `PolicyEngine` port plus `DefaultPolicyEngine`: ordered
+  rules with fail-closed default (`ALLOW/DENY/ASK_HUMAN`), destructive/risky patterns,
+  production/secret/config guards, and role-based capability rules.
 - Everything else in $47 (MVP) and the roadmap is scaffolding to be built.
 
 ## Git workflow (from now on)
