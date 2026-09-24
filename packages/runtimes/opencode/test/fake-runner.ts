@@ -1,4 +1,4 @@
-import type { CommandResult, CommandRunner, CommandRunOptions } from '../src/command-runner';
+import type { CommandResult, CommandRunner, CommandRunOptions } from '@lou/command-runner';
 
 interface CommandCall {
   readonly command: string;

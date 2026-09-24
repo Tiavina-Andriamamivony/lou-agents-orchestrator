@@ -13,7 +13,7 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "knip": "knip",
     "test": "pnpm -r --if-present test",
-    "check": "pnpm lint && pnpm typecheck && pnpm knip && pnpm test",
+    "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm knip && pnpm test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky"

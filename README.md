@@ -162,13 +162,16 @@ product dogfoods the policy it governs with.
   transition rules, iteration budgets).
 - `@lou/opencode-runtime` — the `AgentRuntime` port plus an `OpenCodeRuntime` adapter
   driving the `opencode run` CLI (spawn, timeout, abort, status).
+- `@lou/command-runner` — shared `CommandRunner` port and Node spawn implementation
+  reused by every adapter that shells out.
+- `@lou/git` — the git adapter: create branch, commit, push, current branch, clean check.
 - `@lou/policy-engine` — `ALLOW / DENY / ASK_HUMAN` policy engine: destructive/risky
   patterns, production/secret/config guards, role capabilities.
 - `@lou/constitution` — persistent project rules, default 12-rule template, store at
   `.add/constitution.md`.
 
-**Next (following the spec's priority order):** the git adapter, `/init` onboarding, the
-orchestrator loop, the CLI with human approval gates, and GitHub integration.
+**Next (following the spec's priority order):** the test workflow and human approval
+gates, the orchestrator loop, the CLI, and GitHub integration.
 
 Everything ships test-first, zero-warning lint, strict typecheck, dead-code analysis, and
 a green CI on Node 22 and 24. `main` is protected.
@@ -206,7 +209,10 @@ lou/
 ├── packages/
 │   ├── core/
 │   │   ├── state-machine/        # deterministic, bounded workflow engine
-│   │   └── constitution/         # persistent project rules model + store
+│   │   ├── constitution/         # persistent project rules model + store
+│   │   └── command-runner/       # shared CommandRunner port + Node spawn impl
+│   ├── git/
+│   │   └── src/                  # git adapter: branch, commit, push, clean check
 │   ├── policy/
 │   │   └── engine/               # rules, risk classification, permissions
 │   ├── runtimes/

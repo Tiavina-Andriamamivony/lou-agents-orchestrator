@@ -1,9 +1,9 @@
 {
-  "name": "@lou/opencode-runtime",
+  "name": "@lou/git",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "AgentRuntime port and OpenCode adapter sitting above the opencode CLI.",
+  "description": "Git adapter driving the git CLI through the shared command runner.",
   "exports": {
     ".": "./src/index.ts"
   },
