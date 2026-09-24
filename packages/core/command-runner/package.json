@@ -1,9 +1,9 @@
 {
-  "name": "@lou/opencode-runtime",
+  "name": "@lou/command-runner",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "AgentRuntime port and OpenCode adapter sitting above the opencode CLI.",
+  "description": "Shared command runner port and Node spawn implementation used by Lou adapters.",
   "exports": {
     ".": "./src/index.ts"
   },
@@ -12,9 +12,6 @@
     "lint": "eslint src test",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
-  },
-  "dependencies": {
-    "@lou/command-runner": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.6.3",

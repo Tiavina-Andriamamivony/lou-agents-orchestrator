@@ -1,5 +1,5 @@
-import type { CommandRunner } from './command-runner';
-import { NodeCommandRunner } from './node-command-runner';
+import type { CommandRunner } from '@lou/command-runner';
+import { NodeCommandRunner } from '@lou/command-runner';
 import type { AgentRuntime } from './runtime';
 import type { AgentRunInput, AgentRunResult, AgentStatus } from './types';
 

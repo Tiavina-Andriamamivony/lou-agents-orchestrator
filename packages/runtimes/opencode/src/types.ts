@@ -1,4 +1,4 @@
-import type { CommandResult } from './command-runner';
+import type { CommandResult } from '@lou/command-runner';
 
 export interface AgentRunInput {
   readonly runId: string;
