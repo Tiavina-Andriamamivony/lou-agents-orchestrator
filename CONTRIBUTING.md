@@ -9,7 +9,7 @@ Requirements: Node.js >= 22 and pnpm >= 10.
 
 ```bash
 pnpm install     # install all workspace dependencies
-pnpm check       # lint → typecheck → dead code analysis → tests
+pnpm check       # lint → format → typecheck → dead code analysis → tests
 ```
 
 ## Commit convention
@@ -51,7 +51,7 @@ Every behaviour change ships with tests. `pnpm test` must pass locally before pu
 ## Branch and pull request workflow
 
 - Branch name: `feature/<ticket-id>-<short-slug>` (example: `feature/DEV-142-password-reset`).
-- Open a pull request against `main`. CI runs lint → typecheck → dead code analysis →
+- Open a pull request against `main`. CI runs lint → format → typecheck → dead code analysis →
   tests, and a conventional-commits job checks every commit.
 - `main` is protected: nothing merges without a green pipeline and a human review.
 

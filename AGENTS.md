@@ -41,10 +41,10 @@ pnpm lint           # ESLint strict + NASA Power-of-Ten adaptation (max-warnings
 pnpm typecheck      # tsc --noEmit across packages
 pnpm knip           # dead-code analysis
 pnpm test           # vitest across packages
-pnpm check          # lint -> typecheck -> knip -> test (the full local gate)
+pnpm check          # lint -> format -> typecheck -> knip -> test (the full local gate)
 ```
 
-CI (`.github/workflows/ci.yml`) runs lint -> typecheck -> knip -> test on Node 22 and 24,
+CI (`.github/workflows/ci.yml`) runs lint -> format -> typecheck -> knip -> test on Node 22 and 24,
 plus a conventional-commits job on PRs. `main` is protected: nothing merges without a
 green pipeline.
 
