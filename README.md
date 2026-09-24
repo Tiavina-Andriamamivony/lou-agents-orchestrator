@@ -219,7 +219,8 @@ lou/
 │   │   ├── constitution/         # persistent project rules model + store
 │   │   ├── command-runner/       # shared CommandRunner port + Node spawn impl
 │   │   ├── test-runner/          # runs the project tests, verification over trust
-│   │   └── sandbox/              # workspace confinement + policy gate per command
+│   │   ├── sandbox/              # workspace confinement + policy gate per command
+│   │   └── audit/                # append-only audit trail + per-run summary
 │   ├── git/
 │   │   └── src/                  # git adapter: branch, commit, push, clean check
 │   ├── agents/

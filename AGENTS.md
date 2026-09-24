@@ -23,6 +23,9 @@ use the **Lou** brand.
 - `packages/core/sandbox/` — the command sandbox (§23, §25): a `SandboxedCommandRunner`
   that confines every run to the workspace root and gates each command through the
   policy engine (`DENY`/`ASK_HUMAN` never execute).
+- `packages/core/audit/` — the audit trail (§33, §34): an append-only `AuditLog`
+  (JSON-lines, store-stamped timestamps) recording the 16 minimum event types, plus a
+  `summarizeRun()` observer per run.
 - `packages/integrations/github/` — the `GitHubAdapter` port plus a `NodeGitHubAdapter`
   driving the `gh` CLI: fetch issues and open pull requests.
 - `packages/agents/reviewer/` — the review agent (§17.5, §28): assembles a structured
