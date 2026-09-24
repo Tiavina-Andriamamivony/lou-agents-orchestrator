@@ -52,4 +52,44 @@ describe('runCli', () => {
     expect(code).toBe(1);
     expect(collector.err.join('\n')).toContain('Usage: lou <command>');
   });
+
+  it('prints the lou version', async () => {
+    const collector = createCollector();
+    const code = await runCli(['--version'], {
+      reader: createMemoryReader({}),
+      cwd: '',
+      out: (line: string) => collector.out.push(line),
+      err: (line: string) => collector.err.push(line),
+    });
+
+    expect(code).toBe(0);
+    expect(collector.out.join('\n')).toMatch(/^lou \d+\.\d+\.\d+$/);
+  });
+
+  it('supports the -v version alias', async () => {
+    const collector = createCollector();
+    const code = await runCli(['-v'], {
+      reader: createMemoryReader({}),
+      cwd: '',
+      out: (line: string) => collector.out.push(line),
+      err: (line: string) => collector.err.push(line),
+    });
+
+    expect(code).toBe(0);
+    expect(collector.out.join('\n')).toMatch(/^lou \d+\.\d+\.\d+$/);
+  });
+
+  it.each(['--help', '-h', 'help'])('prints the usage on %s', async (flag) => {
+    const collector = createCollector();
+    const code = await runCli([flag], {
+      reader: createMemoryReader({}),
+      cwd: '',
+      out: (line: string) => collector.out.push(line),
+      err: (line: string) => collector.err.push(line),
+    });
+
+    expect(code).toBe(0);
+    expect(collector.out.join('\n')).toContain('Usage: lou <command>');
+    expect(collector.err).toEqual([]);
+  });
 });

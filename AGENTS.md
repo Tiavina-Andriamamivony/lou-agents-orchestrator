@@ -48,7 +48,10 @@ use the **Lou** brand.
   wires the real adapters (Git, GitHub, OpenCode runtime, test runner, reviewer,
   audit file under `.lou/runs/`, terminal `HumanKeeper`) into the orchestrator and
   drives the ticket to a pull request. The `lou` bin runs TypeScript sources directly
-  through `node --experimental-transform-types`.
+  through `node --no-warnings --experimental-transform-types`. One-line installers
+  (`apps/cli/install/install.sh` for Linux/macOS, `install.ps1` for Windows) fetch the
+  sources from GitHub, run `pnpm install --prod --frozen-lockfile --ignore-scripts` and
+  wire the `lou` launcher onto the PATH.
 - Everything else in $47 (MVP) and the roadmap is scaffolding to be built.
 
 ## Git workflow (from now on)
