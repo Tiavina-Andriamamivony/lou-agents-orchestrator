@@ -1,0 +1,115 @@
+import { describe, expect, it } from 'vitest';
+import { Workflow } from '../src/workflow';
+import { PHASES } from '../src/phases';
+import { COMMANDS } from '../src/commands';
+import { HAPPY_PATH_COMMANDS, UP_TO_REVIEW_COMMANDS } from './fixtures';
+
+describe('Workflow', () => {
+  it('starts at TICKET_RECEIVED', () => {
+    const workflow = new Workflow();
+
+    expect(workflow.phase).toBe(PHASES.TICKET_RECEIVED);
+    expect(workflow.isTerminal).toBe(false);
+    expect(workflow.transitionHistory).toEqual([PHASES.TICKET_RECEIVED]);
+  });
+
+  it('walks the happy path from ticket to preprod', () => {
+    const workflow = new Workflow();
+
+    for (const command of HAPPY_PATH_COMMANDS) {
+      expect(workflow.apply(command).status).toBe('accepted');
+    }
+
+    expect(workflow.phase).toBe(PHASES.PREPROD);
+    expect(workflow.isTerminal).toBe(true);
+  });
+
+  it('rejects an unknown command without moving', () => {
+    const workflow = new Workflow();
+
+    const result = workflow.apply(COMMANDS.PR_MERGED);
+
+    expect(result.status).toBe('rejected');
+    expect(result.phase).toBe(PHASES.TICKET_RECEIVED);
+    expect(result.reason).toContain('no transition');
+  });
+
+  it('accepts plan only after questions are finished', () => {
+    const workflow = new Workflow();
+
+    workflow.apply(COMMANDS.START_DISCOVERY);
+    workflow.apply(COMMANDS.FINISH_DISCOVERY);
+
+    const result = workflow.apply(COMMANDS.APPROVE_PLAN);
+
+    expect(result.status).toBe('rejected');
+    expect(workflow.phase).toBe(PHASES.QUESTIONS);
+  });
+
+  it('rejects commands once the workflow is terminal', () => {
+    const workflow = new Workflow();
+
+    for (const command of HAPPY_PATH_COMMANDS) {
+      workflow.apply(command);
+    }
+
+    const result = workflow.apply(COMMANDS.START_DISCOVERY);
+
+    expect(result.status).toBe('rejected');
+    expect(result.reason).toContain('terminal');
+  });
+
+  it('escapes the test loop after the iteration budget is exhausted', () => {
+    const workflow = new Workflow();
+    workflow.apply(COMMANDS.START_DISCOVERY);
+    workflow.apply(COMMANDS.FINISH_DISCOVERY);
+    workflow.apply(COMMANDS.FINISH_QUESTIONS);
+    workflow.apply(COMMANDS.APPROVE_PLAN);
+    workflow.apply(COMMANDS.TESTS_DESIGNED);
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      workflow.apply(COMMANDS.TESTS_COMPLETE);
+      expect(workflow.apply(COMMANDS.TESTS_FAIL).status).toBe('accepted');
+    }
+    workflow.apply(COMMANDS.TESTS_COMPLETE);
+
+    const result = workflow.apply(COMMANDS.TESTS_FAIL);
+
+    expect(result.status).toBe('intervention-required');
+    expect(workflow.phase).toBe(PHASES.HUMAN_INTERVENTION_REQUIRED);
+    expect(workflow.isTerminal).toBe(true);
+  });
+
+  it('escapes the review loop after the iteration budget is exhausted', () => {
+    const workflow = new Workflow();
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      for (const command of UP_TO_REVIEW_COMMANDS) {
+        workflow.apply(command);
+      }
+      expect(workflow.apply(COMMANDS.CHANGES_REQUESTED).status).toBe('accepted');
+    }
+    for (const command of UP_TO_REVIEW_COMMANDS) {
+      workflow.apply(command);
+    }
+
+    const result = workflow.apply(COMMANDS.CHANGES_REQUESTED);
+
+    expect(result.status).toBe('intervention-required');
+    expect(workflow.phase).toBe(PHASES.HUMAN_INTERVENTION_REQUIRED);
+  });
+
+  it('records the full transition history', () => {
+    const workflow = new Workflow();
+    workflow.apply(COMMANDS.START_DISCOVERY);
+    workflow.apply(COMMANDS.FINISH_DISCOVERY);
+    workflow.apply(COMMANDS.FINISH_QUESTIONS);
+
+    expect(workflow.transitionHistory).toEqual([
+      PHASES.TICKET_RECEIVED,
+      PHASES.DISCOVERY,
+      PHASES.QUESTIONS,
+      PHASES.PLAN,
+    ]);
+  });
+});

@@ -1,0 +1,20 @@
+{
+  "name": "@add/state-machine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Deterministic workflow state machine that governs ADD runs with bounded iterations.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "lint": "eslint src test",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.5"
+  }
+}
