@@ -1,0 +1,47 @@
+{
+  "name": "agentic-driven-development",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agentic-Driven Development: the engineering control plane for AI coding agents.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@10.33.3",
+  "scripts": {
+    "lint": "pnpm -r --if-present lint",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "knip": "knip",
+    "test": "pnpm -r --if-present test",
+    "check": "pnpm lint && pnpm typecheck && pnpm knip && pnpm test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix --no-warn-ignored --max-warnings 0",
+      "prettier --write"
+    ],
+    "*.{js,mjs,cjs,json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
+    "@eslint-community/eslint-plugin-eslint-comments": "^4.4.0",
+    "@eslint/js": "^9.14.0",
+    "@types/node": "^22.9.0",
+    "@vitest/eslint-plugin": "^1.1.0",
+    "eslint": "^9.14.0",
+    "globals": "^15.12.0",
+    "husky": "^9.1.6",
+    "knip": "^5.35.0",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.13.0",
+    "vitest": "^2.1.5"
+  }
+}
