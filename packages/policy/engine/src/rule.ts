@@ -1,5 +1,5 @@
-import type { Action } from './action';
-import type { Decision } from './decision';
+import type { Action } from './action.ts';
+import type { Decision } from './decision.ts';
 
 export interface PolicyRule {
   readonly id: string;

@@ -1,7 +1,7 @@
-import type { Action } from './action';
-import type { PolicyDecision } from './decision';
-import type { PolicyEngine } from './policy-engine';
-import type { PolicyRule } from './rule';
+import type { Action } from './action.ts';
+import type { PolicyDecision } from './decision.ts';
+import type { PolicyEngine } from './policy-engine.ts';
+import type { PolicyRule } from './rule.ts';
 
 const FAIL_CLOSED_RULE = 'default-fail-closed';
 const FAIL_CLOSED_REASON = 'no rule matched; failing closed';

@@ -1,6 +1,11 @@
 import type { CommandResult, CommandRunner } from '@lou/command-runner';
 import { NodeCommandRunner } from '@lou/command-runner';
-import type { GitHubAdapter, GitHubIssue, PullRequest, PullRequestInput } from './github-adapter';
+import type {
+  GitHubAdapter,
+  GitHubIssue,
+  PullRequest,
+  PullRequestInput,
+} from './github-adapter.ts';
 
 export interface NodeGitHubAdapterOptions {
   readonly root: string;

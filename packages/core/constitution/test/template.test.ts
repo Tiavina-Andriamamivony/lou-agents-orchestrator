@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { defaultArticles } from '../src/template';
+import { defaultArticles } from '../src/template.ts';
 
 describe('defaultArticles', () => {
   it('ships the twelve rules from the spec', () => {

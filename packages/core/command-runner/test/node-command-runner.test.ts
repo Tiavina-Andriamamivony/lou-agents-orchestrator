@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { NodeCommandRunner } from '../src/node-command-runner';
+import { NodeCommandRunner } from '../src/node-command-runner.ts';
 
 const runner = new NodeCommandRunner();
 const cwd = process.cwd();

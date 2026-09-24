@@ -1,6 +1,6 @@
 import type { CommandResult, CommandRunner } from '@lou/command-runner';
 import { NodeCommandRunner } from '@lou/command-runner';
-import type { GitAdapter } from './git-adapter';
+import type { GitAdapter } from './git-adapter.ts';
 
 export interface NodeGitAdapterOptions {
   readonly root: string;

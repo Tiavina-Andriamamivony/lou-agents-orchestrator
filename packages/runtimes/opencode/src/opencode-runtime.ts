@@ -1,7 +1,7 @@
 import type { CommandRunner } from '@lou/command-runner';
 import { NodeCommandRunner } from '@lou/command-runner';
-import type { AgentRuntime } from './runtime';
-import type { AgentRunInput, AgentRunResult, AgentStatus } from './types';
+import type { AgentRuntime } from './runtime.ts';
+import type { AgentRunInput, AgentRunResult, AgentStatus } from './types.ts';
 
 const DEFAULT_TIMEOUT_MS = 300_000;
 

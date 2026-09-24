@@ -1,4 +1,4 @@
-export type { AgentRuntime } from './runtime';
-export { OpenCodeRuntime } from './opencode-runtime';
-export type { OpenCodeRuntimeOptions } from './opencode-runtime';
-export type { AgentRunInput, AgentRunResult, AgentStatus } from './types';
+export type { AgentRuntime } from './runtime.ts';
+export { OpenCodeRuntime } from './opencode-runtime.ts';
+export type { OpenCodeRuntimeOptions } from './opencode-runtime.ts';
+export type { AgentRunInput, AgentRunResult, AgentStatus } from './types.ts';

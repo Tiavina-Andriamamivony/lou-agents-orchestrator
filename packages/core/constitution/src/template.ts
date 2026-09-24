@@ -1,4 +1,4 @@
-import type { Article } from './article';
+import type { Article } from './article.ts';
 
 const DEFAULT_STATEMENTS: readonly string[] = [
   'Never modify production automatically.',

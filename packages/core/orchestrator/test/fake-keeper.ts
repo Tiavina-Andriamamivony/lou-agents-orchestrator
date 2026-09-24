@@ -1,4 +1,4 @@
-import type { ApprovalRequest, HumanKeeper } from '../src/types';
+import type { ApprovalRequest, HumanKeeper } from '../src/types.ts';
 
 interface KeeperOptions {
   readonly plan: readonly boolean[];

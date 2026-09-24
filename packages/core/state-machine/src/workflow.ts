@@ -1,8 +1,8 @@
-import type { Phase, Command } from './types';
-import { PHASES, TERMINAL_PHASES } from './phases';
-import { findTransitionRule } from './transitions';
-import type { WorkflowResult } from './result';
-import { rejected } from './result';
+import type { Phase, Command } from './types.ts';
+import { PHASES, TERMINAL_PHASES } from './phases.ts';
+import { findTransitionRule } from './transitions.ts';
+import type { WorkflowResult } from './result.ts';
+import { rejected } from './result.ts';
 
 const DEFAULT_ITERATION_LIMIT = 5;
 

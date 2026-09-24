@@ -1,6 +1,6 @@
-import type { Action } from './action';
-import { PatternRule } from './pattern-rule';
-import type { PolicyRule } from './rule';
+import type { Action } from './action.ts';
+import { PatternRule } from './pattern-rule.ts';
+import type { PolicyRule } from './rule.ts';
 
 const DEFAULT_RISKY_PATTERNS: readonly RegExp[] = [
   /chmod|chown/,

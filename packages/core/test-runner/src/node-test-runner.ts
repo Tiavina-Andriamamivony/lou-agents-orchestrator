@@ -1,6 +1,6 @@
 import type { CommandRunner } from '@lou/command-runner';
 import { NodeCommandRunner } from '@lou/command-runner';
-import type { TestResult, TestRunner, TestRunOptions } from './test-runner';
+import type { TestResult, TestRunner, TestRunOptions } from './test-runner.ts';
 
 const DEFAULT_COMMAND = 'pnpm';
 const DEFAULT_ARGS: readonly string[] = ['test'];

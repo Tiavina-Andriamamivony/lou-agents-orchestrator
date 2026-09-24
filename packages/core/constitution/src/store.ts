@@ -1,8 +1,8 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { Article } from './article';
-import { parseConstitution } from './parse';
-import { serializeConstitution } from './serialize';
+import type { Article } from './article.ts';
+import { parseConstitution } from './parse.ts';
+import { serializeConstitution } from './serialize.ts';
 
 export interface ConstitutionFile {
   readonly exists: boolean;

@@ -1,5 +1,5 @@
 import type { GitHubIssue } from '@lou/github';
-import type { PlanDraft, ReviewNote } from './types';
+import type { PlanDraft, ReviewNote } from './types.ts';
 
 export interface PullRequestBodyInput {
   readonly issue: GitHubIssue;

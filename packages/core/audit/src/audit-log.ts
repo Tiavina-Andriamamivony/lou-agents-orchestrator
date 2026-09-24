@@ -1,6 +1,6 @@
 import { appendFile, mkdir, readFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import type { AuditEvent, AuditEventPayload, AuditEventType } from './types';
+import type { AuditEvent, AuditEventPayload, AuditEventType } from './types.ts';
 
 export const EVENT_TYPES: readonly AuditEventType[] = [
   'agent_started',

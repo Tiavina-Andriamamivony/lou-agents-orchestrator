@@ -1,6 +1,6 @@
-import type { Action } from './action';
-import type { Decision } from './decision';
-import type { PolicyRule } from './rule';
+import type { Action } from './action.ts';
+import type { Decision } from './decision.ts';
+import type { PolicyRule } from './rule.ts';
 
 export class PatternRule implements PolicyRule {
   constructor(

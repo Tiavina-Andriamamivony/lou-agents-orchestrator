@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { TRANSITION_RULES, findTransitionRule } from '../src/transitions';
-import { PHASES } from '../src/phases';
+import { TRANSITION_RULES, findTransitionRule } from '../src/transitions.ts';
+import { PHASES } from '../src/phases.ts';
 
 describe('transition table', () => {
   it('is deterministic for every declared transition', () => {

@@ -1,5 +1,5 @@
 import type { ChildProcess } from 'node:child_process';
-import type { CommandResult, CommandRunOptions } from './command-runner';
+import type { CommandResult, CommandRunOptions } from './command-runner.ts';
 
 export class RunningCommand {
   private stdoutChunks: string[] = [];

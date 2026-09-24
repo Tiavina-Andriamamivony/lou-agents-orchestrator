@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { OpenCodeRuntime } from '../src/opencode-runtime';
-import { FakeRunner } from './fake-runner';
+import { OpenCodeRuntime } from '../src/opencode-runtime.ts';
+import { FakeRunner } from './fake-runner.ts';
 
 const INPUT = {
   runId: 'RUN-001',

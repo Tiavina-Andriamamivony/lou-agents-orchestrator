@@ -1,4 +1,4 @@
-import type { AgentRunInput, AgentRunResult, AgentStatus } from './types';
+import type { AgentRunInput, AgentRunResult, AgentStatus } from './types.ts';
 
 export interface AgentRuntime {
   run(input: AgentRunInput): Promise<AgentRunResult>;

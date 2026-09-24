@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseConstitution } from '../src/parse';
+import { parseConstitution } from '../src/parse.ts';
 
 const DOCUMENT = `# Project Constitution
 

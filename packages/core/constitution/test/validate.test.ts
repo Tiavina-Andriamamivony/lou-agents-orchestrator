@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Article } from '../src/article';
-import { validateArticles } from '../src/validate';
+import type { Article } from '../src/article.ts';
+import { validateArticles } from '../src/validate.ts';
 
 describe('validateArticles', () => {
   it('reports no problems for a clean, ordered set', () => {

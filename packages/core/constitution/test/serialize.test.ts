@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { parseConstitution } from '../src/parse';
-import { serializeConstitution } from '../src/serialize';
-import { defaultArticles } from '../src/template';
+import { parseConstitution } from '../src/parse.ts';
+import { serializeConstitution } from '../src/serialize.ts';
+import { defaultArticles } from '../src/template.ts';
 
 describe('serializeConstitution', () => {
   it('round-trips through parseConstitution', () => {

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import type { Action } from '../src/action';
-import type { PolicyDecision } from '../src/decision';
-import type { RoleCapability } from '../src/capability-rule';
-import type { PolicyRule } from '../src/rule';
-import { defaultRules } from '../src/defaults';
-import { DefaultPolicyEngine } from '../src/default-policy-engine';
-import { destructiveRules } from '../src/destructive-rules';
-import { configRule, productionRule, riskRules, secretRule } from '../src/human-rules';
+import type { Action } from '../src/action.ts';
+import type { PolicyDecision } from '../src/decision.ts';
+import type { RoleCapability } from '../src/capability-rule.ts';
+import type { PolicyRule } from '../src/rule.ts';
+import { defaultRules } from '../src/defaults.ts';
+import { DefaultPolicyEngine } from '../src/default-policy-engine.ts';
+import { destructiveRules } from '../src/destructive-rules.ts';
+import { configRule, productionRule, riskRules, secretRule } from '../src/human-rules.ts';
 
 function evaluate(rules: readonly PolicyRule[], action: Action): Promise<PolicyDecision> {
   return new DefaultPolicyEngine(rules).evaluate(action);

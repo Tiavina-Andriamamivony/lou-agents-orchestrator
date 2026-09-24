@@ -1,3 +1,3 @@
-export type { TestResult, TestRunner, TestRunOptions } from './test-runner';
-export { NodeTestRunner } from './node-test-runner';
-export type { NodeTestRunnerOptions } from './node-test-runner';
+export type { TestResult, TestRunner, TestRunOptions } from './test-runner.ts';
+export { NodeTestRunner } from './node-test-runner.ts';
+export type { NodeTestRunnerOptions } from './node-test-runner.ts';

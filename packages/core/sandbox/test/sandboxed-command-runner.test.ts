@@ -2,9 +2,9 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { SandboxedCommandRunner } from '../src/sandboxed-command-runner';
-import { allowed, askHuman, denied, RecordingPolicyEngine } from './policy-engine-recorder';
-import { RecordingRunner } from './runner-recorder';
+import { SandboxedCommandRunner } from '../src/sandboxed-command-runner.ts';
+import { allowed, askHuman, denied, RecordingPolicyEngine } from './policy-engine-recorder.ts';
+import { RecordingRunner } from './runner-recorder.ts';
 
 let root: string;
 

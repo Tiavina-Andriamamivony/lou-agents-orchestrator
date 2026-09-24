@@ -1,5 +1,5 @@
-import { PatternRule } from './pattern-rule';
-import type { PolicyRule } from './rule';
+import { PatternRule } from './pattern-rule.ts';
+import type { PolicyRule } from './rule.ts';
 
 const DEFAULT_DESTRUCTIVE_PATTERNS: readonly RegExp[] = [
   /rm\s+-[a-z]*[rf][a-z]*/,

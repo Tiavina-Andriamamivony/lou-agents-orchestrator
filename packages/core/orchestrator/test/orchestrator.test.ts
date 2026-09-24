@@ -3,15 +3,15 @@ import type { GitHubIssue } from '@lou/github';
 import { ReviewerAgent } from '@lou/reviewer';
 import { PHASES, Workflow } from '@lou/state-machine';
 import { describe, expect, it } from 'vitest';
-import { Orchestrator } from '../src/orchestrator';
-import type { PlanDraft } from '../src/types';
-import { createAuditSpy } from './fake-audit';
-import { createGitHubSpy } from './fake-github';
-import { createGitSpy } from './fake-git';
-import { createKeeper } from './fake-keeper';
-import { createSteps } from './fake-steps';
-import { createTestRunner, TestRunScript } from './fake-test-runner';
-import { RuntimeRecorder, RuntimeReply } from './runtime-recorder';
+import { Orchestrator } from '../src/orchestrator.ts';
+import type { PlanDraft } from '../src/types.ts';
+import { createAuditSpy } from './fake-audit.ts';
+import { createGitHubSpy } from './fake-github.ts';
+import { createGitSpy } from './fake-git.ts';
+import { createKeeper } from './fake-keeper.ts';
+import { createSteps } from './fake-steps.ts';
+import { createTestRunner, TestRunScript } from './fake-test-runner.ts';
+import { RuntimeRecorder, RuntimeReply } from './runtime-recorder.ts';
 
 const ISSUE: GitHubIssue = {
   number: 1,

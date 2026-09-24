@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { Workflow } from '../src/workflow';
-import { PHASES } from '../src/phases';
-import { COMMANDS } from '../src/commands';
-import { HAPPY_PATH_COMMANDS, UP_TO_REVIEW_COMMANDS } from './fixtures';
+import { Workflow } from '../src/workflow.ts';
+import { PHASES } from '../src/phases.ts';
+import { COMMANDS } from '../src/commands.ts';
+import { HAPPY_PATH_COMMANDS, UP_TO_REVIEW_COMMANDS } from './fixtures.ts';
 
 describe('Workflow', () => {
   it('starts at TICKET_RECEIVED', () => {
