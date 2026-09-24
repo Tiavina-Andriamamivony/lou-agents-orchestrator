@@ -20,6 +20,9 @@ use the **Lou** brand.
   push, current branch, clean check) driving the git CLI through the command runner.
 - `packages/core/test-runner/` — the `TestRunner` port plus a `NodeTestRunner` that runs
   the project test command and reports a pass/fail verdict (verification over trust, §4.6).
+- `packages/core/sandbox/` — the command sandbox (§23, §25): a `SandboxedCommandRunner`
+  that confines every run to the workspace root and gates each command through the
+  policy engine (`DENY`/`ASK_HUMAN` never execute).
 - `packages/integrations/github/` — the `GitHubAdapter` port plus a `NodeGitHubAdapter`
   driving the `gh` CLI: fetch issues and open pull requests.
 - `packages/agents/reviewer/` — the review agent (§17.5, §28): assembles a structured
