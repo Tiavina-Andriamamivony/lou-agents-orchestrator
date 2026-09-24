@@ -1,0 +1,93 @@
+import type { CommandRunner } from './command-runner';
+import { NodeCommandRunner } from './node-command-runner';
+import type { AgentRuntime } from './runtime';
+import type { AgentRunInput, AgentRunResult, AgentStatus } from './types';
+
+const DEFAULT_TIMEOUT_MS = 300_000;
+
+export interface OpenCodeRuntimeOptions {
+  readonly binary?: string;
+  readonly runner?: CommandRunner;
+  readonly timeoutMs?: number;
+}
+
+export class OpenCodeRuntime implements AgentRuntime {
+  private readonly binary: string;
+  private readonly runner: CommandRunner;
+  private readonly timeoutMs: number;
+  private readonly controllers = new Map<string, AbortController>();
+  private readonly statuses = new Map<string, AgentStatus>();
+
+  constructor(options?: OpenCodeRuntimeOptions) {
+    this.binary = options?.binary ?? 'opencode';
+    this.runner = options?.runner ?? new NodeCommandRunner();
+    this.timeoutMs = options?.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  }
+
+  async run(input: AgentRunInput): Promise<AgentRunResult> {
+    this.validate(input);
+    const controller = new AbortController();
+    this.controllers.set(input.runId, controller);
+    this.statuses.set(input.runId, { runId: input.runId, running: true, finished: false });
+    try {
+      const result = await this.runner.run(this.binary, this.buildArgs(input), {
+        cwd: input.workspace,
+        signal: controller.signal,
+        timeoutMs: this.timeoutMs,
+      });
+      this.statuses.set(
+        input.runId,
+        this.toFinished(input.runId, result.exitCode, result.interrupted),
+      );
+      return { runId: input.runId, ...result };
+    } catch (error) {
+      this.statuses.set(input.runId, { runId: input.runId, running: false, finished: false });
+      throw error;
+    } finally {
+      this.controllers.delete(input.runId);
+    }
+  }
+
+  getStatus(runId: string): Promise<AgentStatus> {
+    return Promise.resolve(this.statuses.get(runId) ?? { runId, running: false, finished: false });
+  }
+
+  interrupt(runId: string): Promise<void> {
+    this.controllers.get(runId)?.abort();
+    return Promise.resolve();
+  }
+
+  private buildArgs(input: AgentRunInput): string[] {
+    const args = ['run'];
+    if (input.agent !== undefined) {
+      args.push('--agent', input.agent);
+    }
+    if (input.model !== undefined) {
+      args.push('--model', input.model);
+    }
+    args.push('--print-logs', input.instructions);
+    return args;
+  }
+
+  private validate(input: AgentRunInput): void {
+    if (input.runId.length === 0) {
+      throw new Error('runId must not be empty');
+    }
+    if (input.instructions.length === 0) {
+      throw new Error('instructions must not be empty');
+    }
+    if (input.workspace.length === 0) {
+      throw new Error('workspace must not be empty');
+    }
+  }
+
+  private toFinished(runId: string, exitCode: number, interrupted: boolean): AgentStatus {
+    return {
+      runId,
+      running: false,
+      finished: true,
+      ...(interrupted ? { interrupted } : {}),
+      exitCode,
+    };
+  }
+}

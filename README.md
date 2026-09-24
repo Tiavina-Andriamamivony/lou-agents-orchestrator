@@ -95,7 +95,7 @@ add/
 │   ├── policy/                   # policy engine and capability model (roadmap)
 │   ├── git/                      # git workflow adapter (roadmap)
 │   ├── runtimes/
-│   │   └── opencode/             # OpenCode adapter (roadmap)
+│   │   └── opencode/             # AgentRuntime port + OpenCode adapter
 │   ├── storage/                  # runs, artefacts, audit trail (roadmap)
 │   └── shared/
 ├── docs/
