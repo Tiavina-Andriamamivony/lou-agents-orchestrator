@@ -1,4 +1,4 @@
-import type { Article } from './article';
+import type { Article } from './article.ts';
 
 export function validateArticles(articles: readonly Article[]): readonly string[] {
   const problems: string[] = [];

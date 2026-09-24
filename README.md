@@ -212,7 +212,7 @@ French) — the design contract this repository implements.
 ```text
 lou/
 ├── apps/
-│   └── cli/                      # the `lou` CLI (read-only `lou init` onboarding)
+│   └── cli/                      # the `lou` CLI (`lou init` onboarding, `lou run <issue>`)
 ├── packages/
 │   ├── core/
 │   │   ├── state-machine/        # workflow engine + human approval gates

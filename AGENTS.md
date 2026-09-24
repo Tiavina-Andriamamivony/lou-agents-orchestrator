@@ -44,7 +44,11 @@ use the **Lou** brand.
   read-only ($6.3), so nothing is written without approval.
 - `apps/cli/` — the `lou` CLI: `lou init` performs read-only project onboarding
   (§6.1–6.4): detects the stack, docs, CI, git conventions and constitution from the
-  filesystem and prints a report without modifying anything.
+  filesystem and prints a report without modifying anything. `lou run <issue-number>`
+  wires the real adapters (Git, GitHub, OpenCode runtime, test runner, reviewer,
+  audit file under `.lou/runs/`, terminal `HumanKeeper`) into the orchestrator and
+  drives the ticket to a pull request. The `lou` bin runs TypeScript sources directly
+  through `node --experimental-transform-types`.
 - Everything else in $47 (MVP) and the roadmap is scaffolding to be built.
 
 ## Git workflow (from now on)
@@ -81,6 +85,11 @@ green pipeline.
   responsibility per function.
 - TypeScript strict with `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`,
   `noImplicitOverride`. Zero warnings, always.
+- Every relative import uses an explicit `.ts` extension (`./audit-log.ts`, `../types.ts`).
+  The source is executed directly by Node (`--experimental-transform-types`), which resolves
+  only full specifiers; `tsconfig.base.json` sets `allowImportingTsExtensions`.
+- `tsconfig.base.json` extends to every workspace; one tsconfig per package mirroring
+  `packages/core/state-machine/` and `apps/cli/` (`noEmit`, `allowImportingTsExtensions`).
 
 ## NASA Power of Ten adaptation (enforced by eslint.config.mjs)
 

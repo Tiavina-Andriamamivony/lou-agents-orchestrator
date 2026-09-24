@@ -4,7 +4,7 @@ import type {
   PlanDraft,
   UnderstandInput,
   Understanding,
-} from '../src/types';
+} from '../src/types.ts';
 
 interface StepsState {
   readonly understandCalls: readonly UnderstandInput[];

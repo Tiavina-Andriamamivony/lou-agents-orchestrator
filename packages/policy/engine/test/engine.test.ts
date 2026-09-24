@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { Action } from '../src/action';
-import type { Decision, PolicyDecision } from '../src/decision';
-import type { PolicyRule } from '../src/rule';
-import { DefaultPolicyEngine } from '../src/default-policy-engine';
+import type { Action } from '../src/action.ts';
+import type { Decision, PolicyDecision } from '../src/decision.ts';
+import type { PolicyRule } from '../src/rule.ts';
+import { DefaultPolicyEngine } from '../src/default-policy-engine.ts';
 
 function directRule(decision: Decision): PolicyRule {
   return {

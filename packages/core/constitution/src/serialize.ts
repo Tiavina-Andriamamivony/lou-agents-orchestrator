@@ -1,4 +1,4 @@
-import type { Article } from './article';
+import type { Article } from './article.ts';
 
 export const CONSTITUTION_HEADING = '# Project Constitution';
 

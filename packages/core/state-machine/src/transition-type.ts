@@ -1,4 +1,4 @@
-import type { Phase, Command } from './types';
+import type { Phase, Command } from './types.ts';
 
 export interface TransitionRule {
   readonly from: Phase;

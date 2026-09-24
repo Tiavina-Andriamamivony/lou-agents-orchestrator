@@ -1,7 +1,7 @@
-export type { Article } from './article';
-export { parseConstitution } from './parse';
-export { CONSTITUTION_HEADING, serializeConstitution } from './serialize';
-export { defaultArticles } from './template';
-export { validateArticles } from './validate';
-export type { ConstitutionFile } from './store';
-export { NodeConstitutionStore } from './store';
+export type { Article } from './article.ts';
+export { parseConstitution } from './parse.ts';
+export { CONSTITUTION_HEADING, serializeConstitution } from './serialize.ts';
+export { defaultArticles } from './template.ts';
+export { validateArticles } from './validate.ts';
+export type { ConstitutionFile } from './store.ts';
+export { NodeConstitutionStore } from './store.ts';

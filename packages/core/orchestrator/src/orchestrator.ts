@@ -5,8 +5,8 @@ import type { ReviewerAgent } from '@lou/reviewer';
 import type { Command, Phase } from '@lou/state-machine';
 import { COMMANDS, PHASES, Workflow } from '@lou/state-machine';
 import type { TestRunner } from '@lou/test-runner';
-import { InterventionBudgetError } from './intervention-budget-error';
-import { buildPullRequestBody } from './pr-body';
+import { InterventionBudgetError } from './intervention-budget-error.ts';
+import { buildPullRequestBody } from './pr-body.ts';
 import type {
   ApprovalDecision,
   ApprovalKind,
@@ -18,7 +18,7 @@ import type {
   ReviewNote,
   UnderstandInput,
   Understanding,
-} from './types';
+} from './types.ts';
 
 const STEP_BUDGET = 256;
 const NO_COMMENT = '(no comment)';

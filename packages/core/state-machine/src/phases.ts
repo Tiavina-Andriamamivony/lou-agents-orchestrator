@@ -1,4 +1,4 @@
-import type { Phase } from './types';
+import type { Phase } from './types.ts';
 
 export const PHASES = {
   TICKET_RECEIVED: 'TICKET_RECEIVED',

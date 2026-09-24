@@ -1,7 +1,7 @@
-import type { TransitionRule } from './transition-type';
-import type { Phase, Command } from './types';
-import { PHASES } from './phases';
-import { COMMANDS } from './commands';
+import type { TransitionRule } from './transition-type.ts';
+import type { Phase, Command } from './types.ts';
+import { PHASES } from './phases.ts';
+import { COMMANDS } from './commands.ts';
 
 export const TRANSITION_RULES: readonly TransitionRule[] = [
   {

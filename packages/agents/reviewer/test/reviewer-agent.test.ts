@@ -5,7 +5,7 @@ import type {
   AgentStatus,
 } from '@lou/opencode-runtime';
 import { describe, expect, it } from 'vitest';
-import { ReviewerAgent } from '../src/reviewer-agent';
+import { ReviewerAgent } from '../src/reviewer-agent.ts';
 
 class RecordingRuntime implements AgentRuntime {
   readonly calls: AgentRunInput[] = [];

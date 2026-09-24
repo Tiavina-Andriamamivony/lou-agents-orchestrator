@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { NodeTestRunner } from '../src/node-test-runner';
+import { NodeTestRunner } from '../src/node-test-runner.ts';
 
 interface RecordedCall {
   readonly command: string;

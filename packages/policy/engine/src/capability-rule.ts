@@ -1,5 +1,5 @@
-import type { Action, ActionKind } from './action';
-import type { PolicyRule } from './rule';
+import type { Action, ActionKind } from './action.ts';
+import type { PolicyRule } from './rule.ts';
 
 export interface RoleCapability {
   readonly role: string;

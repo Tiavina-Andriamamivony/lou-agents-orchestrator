@@ -3,5 +3,5 @@ export type {
   ReviewRequest,
   ReviewerAgentOptions,
   ReviewVerdict,
-} from './reviewer-agent';
-export { ReviewerAgent } from './reviewer-agent';
+} from './reviewer-agent.ts';
+export { ReviewerAgent } from './reviewer-agent.ts';

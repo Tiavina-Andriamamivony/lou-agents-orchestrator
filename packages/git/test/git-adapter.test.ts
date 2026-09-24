@@ -3,8 +3,8 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import type { GitAdapter } from '../src/git-adapter';
-import { NodeGitAdapter } from '../src/node-git-adapter';
+import type { GitAdapter } from '../src/git-adapter.ts';
+import { NodeGitAdapter } from '../src/node-git-adapter.ts';
 
 let dir: string;
 let adapter: GitAdapter;

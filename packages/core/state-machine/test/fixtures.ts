@@ -1,5 +1,5 @@
-import type { Command } from '../src/types';
-import { COMMANDS } from '../src/commands';
+import type { Command } from '../src/types.ts';
+import { COMMANDS } from '../src/commands.ts';
 
 export const HAPPY_PATH_COMMANDS: readonly Command[] = [
   COMMANDS.START_DISCOVERY,

@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import type { ChildProcess } from 'node:child_process';
-import type { CommandResult, CommandRunner, CommandRunOptions } from './command-runner';
-import { RunningCommand } from './running-command';
+import type { CommandResult, CommandRunner, CommandRunOptions } from './command-runner.ts';
+import { RunningCommand } from './running-command.ts';
 
 export class NodeCommandRunner implements CommandRunner {
   async run(

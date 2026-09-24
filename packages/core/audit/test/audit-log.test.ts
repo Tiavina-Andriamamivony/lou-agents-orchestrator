@@ -2,9 +2,9 @@ import { mkdtempSync, rmSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { EVENT_TYPES, AuditLog, NodeAuditLog } from '../src/audit-log';
-import { event, summarizeRun } from '../src/summary';
-import type { AuditEvent } from '../src/types';
+import { EVENT_TYPES, AuditLog, NodeAuditLog } from '../src/audit-log.ts';
+import { event, summarizeRun } from '../src/summary.ts';
+import type { AuditEvent } from '../src/types.ts';
 
 const CLOCK = '2026-09-23T20:00:00.000Z';
 

@@ -1,0 +1,124 @@
+import type { PlanDraft, UnderstandInput } from '@lou/orchestrator';
+import { describe, expect, it } from 'vitest';
+import { createOpenCodeSteps } from '../src/run/opencode-steps';
+import { createFakeRuntime, resultFor } from './fakes';
+
+const ISSUE = {
+  number: 1,
+  title: 'Add reset password',
+  body: 'User can reset the password.',
+  state: 'OPEN',
+} as const;
+
+const PLAN: PlanDraft = {
+  title: 'feat: reset password',
+  branchName: 'feature/reset-password',
+  commitMessage: 'feat(auth): add password reset',
+  steps: ['add the reset endpoint'],
+};
+
+const UNDERSTAND_STDOUT = [
+  'SUMMARY: implement the reset password flow',
+  'QUESTION: which auth provider is used?',
+  'QUESTION: should the link expire?',
+  'PLAN_TITLE: feat: reset password',
+  'PLAN_BRANCH: feature/reset-password',
+  'PLAN_COMMIT: feat(auth): add password reset',
+  'PLAN_STEP: add the reset endpoint',
+  'PLAN_STEP: add the reset ui',
+].join('\n');
+
+function understandInput(): UnderstandInput {
+  return { runId: 'run-1', issue: ISSUE, workspace: '/work', feedback: ['make it secure'] };
+}
+
+describe('createOpenCodeSteps', () => {
+  it('parses the planner output into an understanding', async () => {
+    const runtime = createFakeRuntime([resultFor(UNDERSTAND_STDOUT)]);
+    const steps = createOpenCodeSteps({ runtime, workspace: '/work' });
+
+    const understanding = await steps.understand(understandInput());
+
+    expect(understanding.summary).toBe('implement the reset password flow');
+    expect(understanding.questions).toEqual([
+      'which auth provider is used?',
+      'should the link expire?',
+    ]);
+    expect(understanding.plan).toEqual({
+      title: 'feat: reset password',
+      branchName: 'feature/reset-password',
+      commitMessage: 'feat(auth): add password reset',
+      steps: ['add the reset endpoint', 'add the reset ui'],
+    });
+  });
+
+  it('sends the planner prompt with the ticket and the human feedback', async () => {
+    const runtime = createFakeRuntime([resultFor(UNDERSTAND_STDOUT)]);
+    const steps = createOpenCodeSteps({ runtime, workspace: '/work' });
+
+    await steps.understand(understandInput());
+
+    const input = runtime.runs[0];
+    expect(input?.agent).toBe('planner');
+    expect(input?.workspace).toBe('/work');
+    expect(input?.instructions).toContain('PLAN_TITLE: <conventional commits title>');
+    expect(input?.instructions).toContain('make it secure');
+  });
+
+  it('rejects a plan that lacks the required fields', async () => {
+    const runtime = createFakeRuntime([resultFor('SUMMARY: incomplete')]);
+    const steps = createOpenCodeSteps({ runtime, workspace: '/work' });
+
+    await expect(steps.understand(understandInput())).rejects.toThrow('PLAN_TITLE');
+  });
+
+  it('parses the designed test plan', async () => {
+    const runtime = createFakeRuntime([
+      resultFor('TEST_PLAN: valid token\nTEST_PLAN: invalid token'),
+    ]);
+    const steps = createOpenCodeSteps({ runtime, workspace: '/work' });
+
+    const design = await steps.designTests(PLAN);
+
+    expect(design.testPlan).toBe('valid token\ninvalid token');
+    expect(runtime.runs[0]?.agent).toBe('test-designer');
+  });
+
+  it('parses the written tests change note', async () => {
+    const runtime = createFakeRuntime([
+      resultFor('CHANGED: test/reset.spec.ts\nSUMMARY: tests written'),
+    ]);
+    const steps = createOpenCodeSteps({ runtime, workspace: '/work' });
+
+    const note = await steps.writeTests(PLAN);
+
+    expect(note.changedFiles).toEqual(['test/reset.spec.ts']);
+    expect(note.summary).toBe('tests written');
+    expect(runtime.runs[0]?.agent).toBe('test-writer');
+  });
+
+  it('parses the implemented change note', async () => {
+    const runtime = createFakeRuntime([
+      resultFor('CHANGED: src/reset.ts\nCHANGED: src/reset.spec.ts\nSUMMARY: implemented'),
+    ]);
+    const steps = createOpenCodeSteps({ runtime, workspace: '/work' });
+
+    const note = await steps.implement(PLAN);
+
+    expect(note.changedFiles).toEqual(['src/reset.ts', 'src/reset.spec.ts']);
+    expect(note.summary).toBe('implemented');
+    expect(runtime.runs[0]?.agent).toBe('developer');
+  });
+
+  it('defaults the summary and the test plan when absent', async () => {
+    const runtime = createFakeRuntime([resultFor('')]);
+    const steps = createOpenCodeSteps({ runtime, workspace: '/work' });
+
+    const design = await steps.designTests(PLAN);
+    const note = await steps.implement(PLAN);
+
+    expect(design.testPlan).toBe('(no test plan)');
+    expect(note.summary).toBe('(no summary)');
+    expect(note.changedFiles).toEqual([]);
+  });
+});

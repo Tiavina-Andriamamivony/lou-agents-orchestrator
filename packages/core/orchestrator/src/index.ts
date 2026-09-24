@@ -1,7 +1,7 @@
-export type { OrchestratorOptions } from './orchestrator';
-export { Orchestrator } from './orchestrator';
-export { buildPullRequestBody } from './pr-body';
-export type { PullRequestBodyInput } from './pr-body';
+export type { OrchestratorOptions } from './orchestrator.ts';
+export { Orchestrator } from './orchestrator.ts';
+export { buildPullRequestBody } from './pr-body.ts';
+export type { PullRequestBodyInput } from './pr-body.ts';
 export type {
   ApprovalDecision,
   ApprovalKind,
@@ -15,4 +15,4 @@ export type {
   ReviewNote,
   UnderstandInput,
   Understanding,
-} from './types';
+} from './types.ts';

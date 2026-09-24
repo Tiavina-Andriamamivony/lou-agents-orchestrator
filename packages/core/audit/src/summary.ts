@@ -1,4 +1,4 @@
-import type { AuditEvent, AuditEventPayload } from './types';
+import type { AuditEvent, AuditEventPayload } from './types.ts';
 
 const CLOCK = '2026-09-23T20:00:00.000Z';
 
