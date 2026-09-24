@@ -16,6 +16,14 @@
     "packages/core/constitution": {
       "entry": ["test/**/*.test.ts"],
       "project": ["src/**/*.ts", "test/**/*.ts"]
+    },
+    "packages/core/command-runner": {
+      "entry": ["test/**/*.test.ts"],
+      "project": ["src/**/*.ts", "test/**/*.ts"]
+    },
+    "packages/git": {
+      "entry": ["test/**/*.test.ts"],
+      "project": ["src/**/*.ts", "test/**/*.ts"]
     }
   }
 }

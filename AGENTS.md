@@ -13,9 +13,11 @@ use the **Lou** brand.
 - `packages/core/state-machine/` — deterministic, bounded workflow engine (phases,
   commands, transition rules, iteration budgets).
 - `packages/runtimes/opencode/` — the `AgentRuntime` port plus an `OpenCodeRuntime`
-  adapter that drives the `opencode run` CLI (spawn, timeout, abort, status). This ships
-  `CommandRunner` (`CommandRunner` port + `NodeCommandRunner` + `RunningCommand`) in the
-  same package; it may move to a shared runtime package later.
+  adapter that drives the `opencode run` CLI (spawn, timeout, abort, status).
+- `packages/core/command-runner/` — the shared `CommandRunner` port (`CommandRunner` +
+  `NodeCommandRunner` + `RunningCommand`) used by every adapter that shells out.
+- `packages/git/` — the `GitAdapter` port plus a `NodeGitAdapter` (create branch, commit,
+  push, current branch, clean check) driving the git CLI through the command runner.
 - `packages/policy/engine/` — the `PolicyEngine` port plus `DefaultPolicyEngine`: ordered
   rules with fail-closed default (`ALLOW/DENY/ASK_HUMAN`), destructive/risky patterns,
   production/secret/config guards, and role-based capability rules.
