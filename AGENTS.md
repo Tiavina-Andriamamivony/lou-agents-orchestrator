@@ -18,6 +18,10 @@ no production code yet: the repo is tooling + the first core package.
 - `packages/policy/engine/` — the `PolicyEngine` port plus `DefaultPolicyEngine`: ordered
   rules with fail-closed default (`ALLOW/DENY/ASK_HUMAN`), destructive/risky patterns,
   production/secret/config guards, and role-based capability rules.
+- `packages/core/constitution/` — Article model, default 12-rule template ($7.1),
+  markdown parse/serialize (deterministic), validation, and a `NodeConstitutionStore`
+  persisting `.add/constitution.md`. Writing is explicit (`save()`); `/init` stays
+  read-only ($6.3), so nothing is written without approval.
 - Everything else in $47 (MVP) and the roadmap is scaffolding to be built.
 
 ## Git workflow (from now on)

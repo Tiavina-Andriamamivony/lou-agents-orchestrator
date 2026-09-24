@@ -1,0 +1,46 @@
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import type { Article } from './article';
+import { parseConstitution } from './parse';
+import { serializeConstitution } from './serialize';
+
+export interface ConstitutionFile {
+  readonly exists: boolean;
+  readonly articles: readonly Article[];
+  readonly path: string;
+}
+
+export class NodeConstitutionStore {
+  constructor(private readonly root: string) {}
+
+  async load(): Promise<ConstitutionFile> {
+    const path = this.path;
+    try {
+      const content = await readFile(path, 'utf8');
+      return { exists: true, articles: parseConstitution(content), path };
+    } catch (error) {
+      if (isMissingFile(error)) {
+        return { exists: false, articles: [], path };
+      }
+      throw error;
+    }
+  }
+
+  async save(articles: readonly Article[]): Promise<string> {
+    await mkdir(this.dotAddPath, { recursive: true });
+    await writeFile(this.path, serializeConstitution(articles), 'utf8');
+    return this.path;
+  }
+
+  private get dotAddPath(): string {
+    return join(this.root, '.add');
+  }
+
+  private get path(): string {
+    return join(this.dotAddPath, 'constitution.md');
+  }
+}
+
+function isMissingFile(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT';
+}

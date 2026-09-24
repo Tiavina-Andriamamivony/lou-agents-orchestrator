@@ -161,7 +161,8 @@ add/
 │   └── cli/                      # the `add` CLI (roadmap)
 ├── packages/
 │   ├── core/
-│   │   └── state-machine/        # deterministic, bounded workflow engine
+│   │   ├── state-machine/        # deterministic, bounded workflow engine
+│   │   └── constitution/         # persistent project rules model + store
 │   ├── policy/                   # policy engine and capability model
 │   │   └── engine/               # rules, risk classification, permissions
 │   ├── git/                      # git workflow adapter (roadmap)
