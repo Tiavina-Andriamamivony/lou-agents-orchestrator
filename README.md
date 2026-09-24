@@ -167,6 +167,9 @@ product dogfoods the policy it governs with.
   reused by every adapter that shells out.
 - `@lou/git` — the git adapter: create branch, commit, push, current branch, clean check.
 - `@lou/github` — GitHub adapter on the `gh` CLI: fetch issues, open pull requests.
+- `@lou/reviewer` — review agent: structured pre-review (correctness, architecture, tests,
+  security, complexity, regressions, policy) returning `APPROVED / CHANGES_REQUESTED /
+BLOCKED`, mapped onto the workflow commands.
 - `@lou/test-runner` — runs the project test command itself and reports a pass/fail
   verdict (verification over trust, no agent assertion taken at face value).
 - `@lou/policy-engine` — `ALLOW / DENY / ASK_HUMAN` policy engine: destructive/risky
@@ -218,6 +221,8 @@ lou/
 │   │   └── test-runner/          # runs the project tests, verification over trust
 │   ├── git/
 │   │   └── src/                  # git adapter: branch, commit, push, clean check
+│   ├── agents/
+│   │   └── reviewer/             # structured pre-review, verdict → workflow
 │   ├── integrations/
 │   │   └── github/               # gh CLI adapter: issues, pull requests
 │   ├── policy/
