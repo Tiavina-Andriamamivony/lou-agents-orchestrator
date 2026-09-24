@@ -162,7 +162,8 @@ add/
 ├── packages/
 │   ├── core/
 │   │   └── state-machine/        # deterministic, bounded workflow engine
-│   ├── policy/                   # policy engine and capability model (roadmap)
+│   ├── policy/                   # policy engine and capability model
+│   │   └── engine/               # rules, risk classification, permissions
 │   ├── git/                      # git workflow adapter (roadmap)
 │   ├── runtimes/
 │   │   └── opencode/             # AgentRuntime port + OpenCode adapter
