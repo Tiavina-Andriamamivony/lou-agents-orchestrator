@@ -26,6 +26,10 @@ use the **Lou** brand.
 - `packages/core/audit/` — the audit trail (§33, §34): an append-only `AuditLog`
   (JSON-lines, store-stamped timestamps) recording the 16 minimum event types, plus a
   `summarizeRun()` observer per run.
+- `packages/core/orchestrator/` — the orchestrator (§18), the heart of the loop: drives a
+  `Workflow` from ticket to PR_CREATED through injected `OrchestratorSteps` (planner,
+  tests, developer), `HumanKeeper` approval gates, `ReviewerAgent`, `TestRunner`, git and
+  GitHub adapters, recording every step in the `AuditLog`.
 - `packages/integrations/github/` — the `GitHubAdapter` port plus a `NodeGitHubAdapter`
   driving the `gh` CLI: fetch issues and open pull requests.
 - `packages/agents/reviewer/` — the review agent (§17.5, §28): assembles a structured
