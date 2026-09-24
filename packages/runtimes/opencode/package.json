@@ -1,5 +1,5 @@
 {
-  "name": "@add/opencode-runtime",
+  "name": "@lou/opencode-runtime",
   "version": "0.1.0",
   "private": true,
   "type": "module",

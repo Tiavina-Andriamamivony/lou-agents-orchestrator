@@ -1,9 +1,9 @@
 {
-  "name": "@add/state-machine",
+  "name": "@lou/state-machine",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Deterministic workflow state machine that governs ADD runs with bounded iterations.",
+  "description": "Deterministic workflow state machine that governs agent runs with bounded iterations.",
   "exports": {
     ".": "./src/index.ts"
   },

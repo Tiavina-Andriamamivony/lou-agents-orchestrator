@@ -1,73 +1,51 @@
-# Agentic-Driven Development (ADD)
+<p align="center">
+  <img src="public/logo.png" alt="Lou Agents Orchestrator" width="140" />
+</p>
 
-**The control plane for AI coding agents.**
+<h1 align="center">Lou Agents Orchestrator</h1>
 
-OpenCode executes. ADD governs and orchestrates. Coding agents are fast, but speed
-without process is chaos: unverified changes, ignored tests, unbounded scope, surprise
-merges. ADD sits _above_ the agent runtime and gives every change the same engineering
-process a senior team would — plan, test, verify, review, human approval — while letting
-the agent keep its velocity.
+<p align="center">
+  <strong>The governance layer for AI coding agents.</strong><br />
+  Coding agents are fast. Lou makes them accountable — plan, test, verify, review,&nbsp;human&nbsp;approval.<br />
+  <em>OpenCode executes. Lou orchestrates.</em>
+</p>
 
-The detailed product specification is in French: `docs/cahier-des-charges.md`.
+<p align="center">
+  <a href="https://github.com/Tiavina-Andriamamivony/lou-agents-orchestrator/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Tiavina-Andriamamivony/lou-agents-orchestrator/ci.yml?branch=main&label=CI&logo=githubactions&logoColor=white" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/Tiavina-Andriamamivony/lou-agents-orchestrator" alt="License: MIT"></a>
+  <img src="https://img.shields.io/badge/Node.js-%E2%89%A522-339933?logo=nodedotjs&logoColor=white" alt="Node.js >= 22">
+  <img src="https://img.shields.io/badge/pnpm-10-F69220?logo=pnpm&logoColor=white" alt="pnpm">
+  <img src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" alt="TypeScript strict">
+  <img src="https://img.shields.io/badge/NASA%20Power%20of%20Ten-compliant-7C4DFF" alt="NASA Power of Ten">
+</p>
+
+<p align="center">
+  <a href="#the-problem-lou-solves">The problem</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#who-its-for">Who it's for</a> ·
+  <a href="#principles">Principles</a> ·
+  <a href="#safety-model">Safety</a> ·
+  <a href="#roadmap">Roadmap</a> ·
+  <a href="#getting-started">Getting started</a>
+</p>
 
 ---
 
-## The problem ADD solves
+## The problem Lou solves
 
-Vibe coding is fast and uncontrollable. One agent "says" the tests pass; nobody checked.
-Another refactors half the codebase because a ticket said "improve performance".
-A third merges without a review. The bottleneck of AI development is no longer writing
-code — it is **trust and control**.
+AI agents write code faster than ever — and with nobody holding them to an engineering
+bar. One agent _says_ the tests pass; nobody checked. Another rewrites half the codebase
+because a ticket said "improve performance". A third merges without a review.
 
-ADD is not an IDE, not a chat wrapper, not a CRUD generator. It is the governance layer
-between an autonomous agent and a production-grade repository. The same way git made
-collaboration governable, ADD makes autonomous development governable.
+The bottleneck of AI development is no longer **writing code**. It is **trust and
+control**.
 
-## Who it is for
+Lou is not an IDE, not a chat wrapper, not a CRUD generator. It is the layer that sits
+_above_ an agent runtime and turns autonomous coding into a governed engineering process —
+the way git turned collaboration into a governed science. Agents keep their velocity;
+humans keep the final word.
 
-### Development teams
-
-An agent becomes a disciplined team member instead of a cowboy:
-
-- **Test-first by construction** — the expected behaviour is specified as failing tests
-  before any business code is written.
-- **Verification over trust** — an agent asserting "tests pass" is not proof. ADD runs
-  the checks itself and only advances when they are green.
-- **Small blast radius** — changes stay small, isolated and reversible.
-- **Human gates at every decision that matters** — plan approval, review, merge. You
-  delegate execution, never authority.
-- **Bounded loops** — every retry is capped; a run that exhausts its budget stops and
-  escalates to a human instead of improvising.
-
-### Teams building without dedicated coders
-
-For product teams, founders and citizen builders who describe intent instead of writing
-code:
-
-- Describe the goal in plain language. ADD plans the work, writes the tests, implements,
-  verifies and opens a pull request.
-- You supervise outcomes instead of writing syntax: you review the plan, review the
-  result, approve or reject — in natural language.
-- No codebase hostage: the result is a normal repository your team can read, review and
-  take back at any time. The human is the final authority.
-
-### Engineering leaders and business
-
-Agent adoption is a governance decision, not a tool choice:
-
-- **Least privilege** — every agent role receives only the permissions its task requires.
-  No agent gets blanket access to your production or your secrets.
-- **Audit trail** — every call, approval and command is recorded and replayable. If
-  something shipped, you can show exactly how, when and who approved it.
-- **Fail closed** — when a critical operation cannot be assessed, the run stops. It never
-  executes by default.
-- **Model agnostic** — different models can be orchestrated for different tasks. No single
-  vendor lock-in, cost or provider dictated by default.
-- **Reproducible** — a run is a documented, bounded process, not a black box.
-- **Policy at the platform level** — rules live in enforced policy and lint/CI gates, not
-  in individual prompts that anyone can forget.
-
-## How it works: the loop
+## How it works
 
 ```text
 Ticket
@@ -79,16 +57,16 @@ Understand
 Plan
   │
   ▼
-Human approval        ← the engineer stays in charge
+Human approval          ← the engineer stays in charge
   │
   ▼
-Test design           ← tests before implementation
+Test design             ← tests before implementation
   │
   ▼
-Implementation        ← executed by the agent runtime
+Implementation          ← executed by the agent runtime (OpenCode)
   │
   ▼
-Verification          ← ADD runs the checks itself, trust is verified
+Verification            ← Lou runs the checks itself — trust is verified
   │
   ▼
 Review
@@ -100,10 +78,53 @@ Human approval
 Pull request
 ```
 
-ADD does not replace the developer. It lets a developer delegate more work without
-relinquishing control over **what** is built, **why**, and **how**.
+Bounded and audited end to end: every retry is capped, every escalation reaches a human,
+every decision is recorded.
 
-## Core principles
+## Who it's for
+
+### Development teams
+
+An agent becomes a disciplined team member, not a cowboy:
+
+- **Test-first by construction** — behaviour is specified as failing tests _before_ any
+  business code is written.
+- **Verification over trust** — an agent asserting "tests pass" is not proof. Lou runs
+  the checks itself and only advances when they are green.
+- **Small blast radius** — changes stay small, isolated and reversible.
+- **Human gates where they matter** — plan approval, review, merge. You delegate
+  execution, never authority.
+- **Bounded loops** — a run that exhausts its budget stops and escalates instead of
+  improvising.
+
+### Teams building without dedicated coders
+
+For product teams and founders who describe intent instead of writing code:
+
+- Describe the goal in plain language. Lou plans the work, writes the tests, implements,
+  verifies and opens a pull request.
+- You supervise outcomes instead of writing syntax — plan, result, approve or reject, in
+  natural language.
+- No codebase hostage: the result is a normal repository your team can read, review and
+  take back at any time. **The human is the final authority.**
+
+### Engineering leaders and business
+
+Agent adoption is a governance decision, not a tool choice:
+
+- **Least privilege** — every agent role receives only the permissions its task requires.
+  No blanket access to production or secrets.
+- **Audit trail** — every call, approval and command recorded and replayable. If it
+  shipped, you can show exactly how, when and who approved it.
+- **Fail closed** — when a critical operation cannot be assessed, the run stops. It never
+  executes by default.
+- **Model agnostic** — different models orchestrated for different tasks. No single
+  vendor lock-in.
+- **Policy at the platform level** — rules live in enforced policy and lint/CI gates, not
+  in prompts anyone can forget.
+- **Reproducible** — a run is a documented, bounded process, not a black box.
+
+## Principles
 
 | Principle               | Commitment                                                           |
 | ----------------------- | -------------------------------------------------------------------- |
@@ -111,7 +132,7 @@ relinquishing control over **what** is built, **why**, and **how**.
 | Least privilege         | Each agent receives only the permissions its task requires.          |
 | Test first              | Expected behaviour is specified and testable before business code.   |
 | Small blast radius      | Changes stay small, isolated and reversible.                         |
-| Verification over trust | An agent asserting "tests pass" is not proof. ADD runs them.         |
+| Verification over trust | An agent asserting "tests pass" is not proof. Lou runs them.         |
 | Fail closed             | When a critical operation cannot be assessed, stop — do not execute. |
 | Model agnostic          | Different models can be orchestrated for different tasks.            |
 | Reproducible            | Every run can be traced and, as far as possible, replayed.           |
@@ -127,23 +148,32 @@ relinquishing control over **what** is built, **why**, and **how**.
 
 ### NASA Power of Ten as the default engineering policy
 
-ADD ships a configurable baseline policy inspired by the JPL/NASA Power of Ten rules,
+Lou ships a configurable baseline policy inspired by the JPL/NASA Power of Ten rules,
 tuned for TypeScript/Node: bounded control flow, small functions, minimal scope, explicit
 error handling, strict compilation and zero-warning static analysis. The same rules are
-enforced — non-negotiably — on ADD's own codebase through the linter and CI, so the
+enforced — non-negotiably — on Lou's own codebase through the linter and CI, so the
 product dogfoods the policy it governs with.
 
-## Current state and roadmap
+## Current state
 
-**Implemented today:** the deterministic, bounded workflow engine (`@add/state-machine`)
-and the OpenCode adapter (`@add/opencode-runtime`) — an `AgentRuntime` port that runs
-agents through the `opencode run` CLI with timeout, abort and status, behind one
-interface. 26 tests, strict lint, typecheck and dead-code analysis, all enforced by CI on
-Node 22 and 24; `main` is protected.
+**Shipped:**
 
-**Next up (doc §57 priority):** the policy engine, git adapter, `/init` + project
-constitution, then the orchestrator loop, the CLI with human approval gates, and GitHub
-integration. MVP scope is fixed in `docs/cahier-des-charges.md` (§47); phases are:
+- `@lou/state-machine` — deterministic, bounded workflow engine (phases, commands,
+  transition rules, iteration budgets).
+- `@lou/opencode-runtime` — the `AgentRuntime` port plus an `OpenCodeRuntime` adapter
+  driving the `opencode run` CLI (spawn, timeout, abort, status).
+- `@lou/policy-engine` — `ALLOW / DENY / ASK_HUMAN` policy engine: destructive/risky
+  patterns, production/secret/config guards, role capabilities.
+- `@lou/constitution` — persistent project rules, default 12-rule template, store at
+  `.add/constitution.md`.
+
+**Next (following the spec's priority order):** the git adapter, `/init` onboarding, the
+orchestrator loop, the CLI with human approval gates, and GitHub integration.
+
+Everything ships test-first, zero-warning lint, strict typecheck, dead-code analysis, and
+a green CI on Node 22 and 24. `main` is protected.
+
+## Roadmap
 
 | Phase | Focus                                                                                    |
 | ----- | ---------------------------------------------------------------------------------------- |
@@ -153,29 +183,43 @@ integration. MVP scope is fixed in `docs/cahier-des-charges.md` (§47); phases a
 | 3     | Team/enterprise: organizational policies, RBAC, shared projects, compliance              |
 | 4     | Ecosystem: Linear, Jira, GitLab, cloud environments, plugin marketplace                  |
 
+MVP scope is fixed in the [product specification](docs/cahier-des-charges.md) (§47, in
+French) — the design contract this repository implements.
+
+## Why not just "vibe code"?
+
+|                   | Raw agent CLI                 | IDE chat                  | Lou                                      |
+| ----------------- | ----------------------------- | ------------------------- | ---------------------------------------- |
+| Process           | Whatever the model improvises | Whatever the chat decides | A fixed, bounded engineering process     |
+| Tests             | Claimed, occasionally trusted | Claimed                   | Written first, then run by Lou           |
+| Human control     | Interrupt when things break   | Approve inline            | Explicit gates: plan, review, merge      |
+| Safety            | Depends on the prompt         | Depends on the prompt     | Enforced policy + capability permissions |
+| Auditability      | Barely                        | Barely                    | Every decision recorded                  |
+| Model portability | Tied to one provider          | Tied to one provider      | Model-agnostic by design                 |
+
 ## Repository layout
 
 ```text
-add/
+lou/
 ├── apps/
-│   └── cli/                      # the `add` CLI (roadmap)
+│   └── cli/                      # the `lou` CLI (roadmap)
 ├── packages/
 │   ├── core/
 │   │   ├── state-machine/        # deterministic, bounded workflow engine
 │   │   └── constitution/         # persistent project rules model + store
-│   ├── policy/                   # policy engine and capability model
+│   ├── policy/
 │   │   └── engine/               # rules, risk classification, permissions
-│   ├── git/                      # git workflow adapter (roadmap)
 │   ├── runtimes/
 │   │   └── opencode/             # AgentRuntime port + OpenCode adapter
-│   ├── storage/                  # runs, artefacts, audit trail (roadmap)
-│   └── shared/
+│   └── storage/                  # runs, artefacts, audit trail (roadmap)
+├── public/
+│   └── logo.png                  # Lou brandmark
 ├── docs/
 │   └── cahier-des-charges.md     # product specification (FR)
 └── .github/
 ```
 
-## Getting started (contributors)
+## Getting started
 
 Requirements: Node.js >= 22, pnpm >= 10.
 
@@ -186,7 +230,8 @@ pnpm test       # unit tests (Vitest)
 ```
 
 The `packageManager` field pins pnpm; enable Corepack with `corepack enable` if your
-environment requires it.
+environment requires it. The spec priority order and the contribution workflow live in
+[`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Development workflow
 
@@ -194,8 +239,7 @@ environment requires it.
 - TDD: write the failing test, watch it fail, then make it pass.
 - One file, one role. One class per file. One responsibility per function.
 - TypeScript strict with zero warnings — the CI pipeline is the gate.
-- One feature per branch, PR per feature, merge once green. See
-  [`CONTRIBUTING.md`](CONTRIBUTING.md).
+- One feature per branch, PR per feature, merge once green.
 
 ## Non-goals
 
@@ -210,4 +254,11 @@ Report vulnerabilities privately — see [`SECURITY.md`](SECURITY.md).
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE) — © 2026 Lou Agents Orchestrator contributors.
+
+---
+
+<p align="center">
+  <img src="public/logo.png" alt="Lou" width="56" /><br />
+  <em>OpenCode executes. Lou orchestrates.</em>
+</p>
