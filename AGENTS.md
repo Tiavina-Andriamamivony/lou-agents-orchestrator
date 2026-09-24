@@ -18,6 +18,8 @@ use the **Lou** brand.
   `NodeCommandRunner` + `RunningCommand`) used by every adapter that shells out.
 - `packages/git/` — the `GitAdapter` port plus a `NodeGitAdapter` (create branch, commit,
   push, current branch, clean check) driving the git CLI through the command runner.
+- `packages/core/test-runner/` — the `TestRunner` port plus a `NodeTestRunner` that runs
+  the project test command and reports a pass/fail verdict (verification over trust, §4.6).
 - `packages/policy/engine/` — the `PolicyEngine` port plus `DefaultPolicyEngine`: ordered
   rules with fail-closed default (`ALLOW/DENY/ASK_HUMAN`), destructive/risky patterns,
   production/secret/config guards, and role-based capability rules.

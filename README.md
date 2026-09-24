@@ -165,6 +165,8 @@ product dogfoods the policy it governs with.
 - `@lou/command-runner` — shared `CommandRunner` port and Node spawn implementation
   reused by every adapter that shells out.
 - `@lou/git` — the git adapter: create branch, commit, push, current branch, clean check.
+- `@lou/test-runner` — runs the project test command itself and reports a pass/fail
+  verdict (verification over trust, no agent assertion taken at face value).
 - `@lou/policy-engine` — `ALLOW / DENY / ASK_HUMAN` policy engine: destructive/risky
   patterns, production/secret/config guards, role capabilities.
 - `@lou/constitution` — persistent project rules, default 12-rule template, store at
@@ -210,7 +212,8 @@ lou/
 │   ├── core/
 │   │   ├── state-machine/        # deterministic, bounded workflow engine
 │   │   ├── constitution/         # persistent project rules model + store
-│   │   └── command-runner/       # shared CommandRunner port + Node spawn impl
+│   │   ├── command-runner/       # shared CommandRunner port + Node spawn impl
+│   │   └── test-runner/          # runs the project tests, verification over trust
 │   ├── git/
 │   │   └── src/                  # git adapter: branch, commit, push, clean check
 │   ├── policy/
