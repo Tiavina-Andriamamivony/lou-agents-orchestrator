@@ -259,6 +259,13 @@ Options: `--prefix <dir>`, `--version <tag|main>`, `--node <bin>`, `--quiet` (Po
 `-Prefix`, `-Version`, `-Node`, `-Quiet`). Re-run to upgrade; uninstall by removing the
 install directory and its PATH entry.
 
+To verify the whole install flow end-to-end against the current working tree (offline
+tarball, isolated HOME/PREFIX, version check, upgrade idempotence and `lou init`):
+
+```bash
+bash apps/cli/install/smoke.sh
+```
+
 ## Getting started
 
 Requirements: Node.js >= 22, pnpm >= 10.
