@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { runCli } from '../src/cli';
+import type { DoctorProbes } from '../src/doctor/doctor-command';
 import { parseInitJsonFlag } from '../src/init/run-init';
 import { createMemoryReader } from './memory-reader';
 
@@ -68,6 +69,50 @@ describe('runCli', () => {
     expect(code).toBe(1);
     expect(collector.out).toEqual([]);
     expect(collector.err.join('\n')).toContain('Usage: lou init');
+  });
+
+  it('runs doctor and prints the checks', async () => {
+    const collector = createCollector();
+    const doctorProbes: DoctorProbes = {
+      node: () => Promise.resolve({ label: 'Node runtime', ok: true, detail: 'v24.18.0' }),
+      pnpm: () => Promise.resolve({ label: 'pnpm', ok: true, detail: '10.9.0' }),
+      gitHubCli: () => Promise.resolve({ label: 'GitHub CLI', ok: true, detail: 'authenticated' }),
+      opencode: () => Promise.resolve({ label: 'opencode', ok: true, detail: '' }),
+      gitRepository: () => Promise.resolve({ label: 'Git repository', ok: true, detail: '' }),
+    };
+    const code = await runCli(['doctor'], {
+      reader: createMemoryReader({}),
+      cwd: '/work',
+      doctorProbes,
+      out: (line: string) => collector.out.push(line),
+      err: (line: string) => collector.err.push(line),
+    });
+
+    expect(code).toBe(0);
+    expect(collector.err).toEqual([]);
+    expect(collector.out.join('\n')).toContain('5/5 checks passed.');
+  });
+
+  it('exits 1 from doctor when a prerequisite is missing', async () => {
+    const collector = createCollector();
+    const doctorProbes: DoctorProbes = {
+      node: () => Promise.resolve({ label: 'Node runtime', ok: true, detail: 'v24.18.0' }),
+      pnpm: () => Promise.resolve({ label: 'pnpm', ok: true, detail: '10.9.0' }),
+      gitHubCli: () =>
+        Promise.resolve({ label: 'GitHub CLI', ok: false, detail: 'not authenticated' }),
+      opencode: () => Promise.resolve({ label: 'opencode', ok: true, detail: '' }),
+      gitRepository: () => Promise.resolve({ label: 'Git repository', ok: true, detail: '' }),
+    };
+    const code = await runCli(['doctor', 'extra'], {
+      reader: createMemoryReader({}),
+      cwd: '/work',
+      doctorProbes,
+      out: (line: string) => collector.out.push(line),
+      err: (line: string) => collector.err.push(line),
+    });
+
+    expect(code).toBe(1);
+    expect(collector.err.join('\n')).toContain('Usage: lou doctor');
   });
 
   it('rejects an unknown command', async () => {
