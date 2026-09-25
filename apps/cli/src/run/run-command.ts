@@ -43,6 +43,7 @@ export interface RunEnvironment {
   readonly ask: (question: string) => Promise<string>;
   readonly out: (line: string) => void;
   readonly dryRun: boolean;
+  readonly model?: string;
 }
 
 interface ProductionRunOptions {
@@ -50,14 +51,17 @@ interface ProductionRunOptions {
   readonly cwd: string;
   readonly out: (line: string) => void;
   readonly dryRun: boolean;
+  readonly model?: string;
 }
 
 interface RunArguments {
   readonly issueNumber: number;
   readonly dryRun: boolean;
+  readonly model?: string;
 }
 
 const DRY_RUN_FLAG = '--dry-run';
+const MODEL_FLAG = '--model';
 
 export function readIssueNumber(value: string | undefined): number | null {
   if (value === undefined) {
@@ -76,13 +80,24 @@ export function parseRunArguments(argv: readonly string[]): RunArguments | null 
     return null;
   }
   const rest = argv.slice(2);
-  if (rest.length === 0) {
-    return { issueNumber, dryRun: false };
+  let dryRun = false;
+  let model: string | undefined;
+  for (let index = 0; index < rest.length; index += 1) {
+    const arg = rest[index];
+    if (arg === DRY_RUN_FLAG) {
+      dryRun = true;
+    } else if (arg === MODEL_FLAG) {
+      const value = rest[index + 1];
+      if (value === undefined || value.length === 0) {
+        return null;
+      }
+      model = value;
+      index += 1;
+    } else {
+      return null;
+    }
   }
-  if (rest.length === 1 && rest[0] === DRY_RUN_FLAG) {
-    return { issueNumber, dryRun: true };
-  }
-  return null;
+  return model === undefined ? { issueNumber, dryRun } : { issueNumber, dryRun, model };
 }
 
 export function runProduction(options: ProductionRunOptions): Promise<number> {
@@ -99,6 +114,7 @@ export function runProduction(options: ProductionRunOptions): Promise<number> {
     ask: terminalQuestion,
     out: options.out,
     dryRun: options.dryRun,
+    ...(options.model !== undefined ? { model: options.model } : {}),
   });
 }
 
@@ -111,7 +127,11 @@ export async function runTicket(env: RunEnvironment): Promise<number> {
     env.out(`Issue #${issue.number} is already closed.`);
     return 1;
   }
-  const steps = createOpenCodeSteps({ runtime: env.runtime, workspace: env.workspace });
+  const steps = createOpenCodeSteps({
+    runtime: env.runtime,
+    workspace: env.workspace,
+    ...(env.model !== undefined ? { model: env.model } : {}),
+  });
   if (env.dryRun) {
     return runDryRun(issue, env, steps);
   }
@@ -122,7 +142,10 @@ export async function runTicket(env: RunEnvironment): Promise<number> {
     workflow: new Workflow(),
     steps,
     keeper: createTerminalKeeper({ ask: env.ask, out: env.out }),
-    reviewer: new ReviewerAgent({ runtime: env.runtime }),
+    reviewer: new ReviewerAgent({
+      runtime: env.runtime,
+      ...(env.model !== undefined ? { model: env.model } : {}),
+    }),
     tests: env.tests,
     git: env.git,
     github: env.github,

@@ -10,6 +10,7 @@ import type {
 interface OpenCodeStepsOptions {
   readonly runtime: AgentRuntime;
   readonly workspace: string;
+  readonly model?: string;
 }
 
 const SUMMARY_PATTERN = /^SUMMARY\s*:\s*(.+)$/im;
@@ -22,23 +23,42 @@ const TEST_PLAN_PATTERN = /^TEST_PLAN\s*:\s*(.+)$/im;
 const CHANGED_PATTERN = /^CHANGED\s*:\s*(.+)$/im;
 
 export function createOpenCodeSteps(options: OpenCodeStepsOptions): OrchestratorSteps {
-  const { runtime, workspace } = options;
+  const { runtime, workspace, model } = options;
   return {
-    understand: (input) => understand(runtime, input),
-    designTests: (plan) => designTests(runtime, workspace, plan),
+    understand: (input) => understand(runtime, input, model),
+    designTests: (plan) => designTests(runtime, workspace, plan, model),
     writeTests: (plan) =>
-      changeNote({ runtime, workspace, plan, agent: 'test-writer', prompt: buildWriteTestsPrompt }),
+      changeNote({
+        runtime,
+        workspace,
+        plan,
+        agent: 'test-writer',
+        prompt: buildWriteTestsPrompt,
+        model,
+      }),
     implement: (plan) =>
-      changeNote({ runtime, workspace, plan, agent: 'developer', prompt: buildImplementPrompt }),
+      changeNote({
+        runtime,
+        workspace,
+        plan,
+        agent: 'developer',
+        prompt: buildImplementPrompt,
+        model,
+      }),
   };
 }
 
-async function understand(runtime: AgentRuntime, input: UnderstandInput): Promise<Understanding> {
+async function understand(
+  runtime: AgentRuntime,
+  input: UnderstandInput,
+  model: string | undefined,
+): Promise<Understanding> {
   const result = await runtime.run({
     runId: input.runId,
     agent: 'planner',
     instructions: buildUnderstandPrompt(input),
     workspace: input.workspace,
+    ...withModel(model),
   });
   return parseUnderstanding(result.stdout);
 }
@@ -49,13 +69,15 @@ async function changeNote(options: {
   readonly plan: PlanDraft;
   readonly agent: string;
   readonly prompt: (input: PlanDraft) => string;
+  readonly model: string | undefined;
 }): Promise<ChangeNote> {
-  const { runtime, workspace, plan, agent, prompt } = options;
+  const { runtime, workspace, plan, agent, prompt, model } = options;
   const result = await runtime.run({
     runId: runIdFor(agent, plan),
     agent,
     instructions: prompt(plan),
     workspace,
+    ...withModel(model),
   });
   return {
     changedFiles: matchAll(result.stdout, CHANGED_PATTERN),
@@ -67,14 +89,20 @@ async function designTests(
   runtime: AgentRuntime,
   workspace: string,
   plan: PlanDraft,
+  model: string | undefined,
 ): Promise<{ readonly testPlan: string }> {
   const result = await runtime.run({
     runId: runIdFor('test-designer', plan),
     agent: 'test-designer',
     instructions: buildDesignTestsPrompt(plan),
     workspace,
+    ...withModel(model),
   });
   return { testPlan: matchAll(result.stdout, TEST_PLAN_PATTERN).join('\n') || '(no test plan)' };
+}
+
+function withModel(model: string | undefined): { readonly model?: string } {
+  return model === undefined ? {} : { model };
 }
 
 function buildUnderstandPrompt(input: UnderstandInput): string {

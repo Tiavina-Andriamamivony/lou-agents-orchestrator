@@ -46,7 +46,11 @@ interface EnvFixture {
   readonly out: readonly string[];
 }
 
-function buildEnv(replies: readonly AgentRunResult[], issue: GitHubIssue = ISSUE): EnvFixture {
+function buildEnv(
+  replies: readonly AgentRunResult[],
+  issue: GitHubIssue = ISSUE,
+  model?: string,
+): EnvFixture {
   const git = createGitSpy();
   const audit = createAuditSpy();
   const github = createGitHubSpy(issue);
@@ -65,6 +69,7 @@ function buildEnv(replies: readonly AgentRunResult[], issue: GitHubIssue = ISSUE
     ask: () => Promise.resolve('y'),
     out: (line: string) => out.push(line),
     dryRun: false,
+    ...(model !== undefined ? { model } : {}),
   };
   return { env, git, audit, github, runtime, out };
 }
@@ -165,6 +170,18 @@ describe('runTicket', () => {
     expect(asked.some((question) => question.includes('Approve review'))).toBe(true);
     expect(out.join('\n')).toContain('Plan gate');
   });
+
+  it('routes the configured model to every agent run', async () => {
+    const { env, runtime } = buildEnv(happyReplies(), ISSUE, 'gpt-5');
+
+    const code = await runTicket(env);
+
+    expect(code).toBe(0);
+    expect(runtime.runs).toHaveLength(5);
+    for (const run of runtime.runs) {
+      expect(run.model).toBe('gpt-5');
+    }
+  });
 });
 
 describe('runTicket in dry-run', () => {
@@ -238,6 +255,30 @@ describe('runTicket in dry-run', () => {
     expect(answered).toEqual(['auth or not? ']);
     expect(runtime.runs.map((run) => run.agent)).toEqual(['planner', 'planner']);
   });
+
+  it('routes the model to the planner during a dry run', async () => {
+    const runtime = createFakeRuntime([resultFor(PLANNER_STDOUT)]);
+    const env: RunEnvironment = {
+      issueNumber: ISSUE.number,
+      workspace: '/work',
+      github: createGitHubSpy(ISSUE).github,
+      git: createGitSpy().git,
+      tests: createTestRunner(true).runner,
+      audit: createAuditSpy().log,
+      runtime,
+      conventions: 'conventional commits',
+      ask: () => Promise.resolve('y'),
+      out: () => undefined,
+      dryRun: true,
+      model: 'gpt-5',
+    };
+
+    const code = await runTicket(env);
+
+    expect(code).toBe(0);
+    expect(runtime.runs).toHaveLength(1);
+    expect(runtime.runs[0]?.model).toBe('gpt-5');
+  });
 });
 
 describe('parseRunArguments', () => {
@@ -252,8 +293,32 @@ describe('parseRunArguments', () => {
     });
   });
 
+  it('parses a --model option', () => {
+    expect(parseRunArguments(['run', '12', '--model', 'gpt-5'])).toEqual({
+      issueNumber: 12,
+      dryRun: false,
+      model: 'gpt-5',
+    });
+  });
+
+  it('parses --dry-run combined with --model', () => {
+    expect(parseRunArguments(['run', '12', '--dry-run', '--model', 'gpt-5'])).toEqual({
+      issueNumber: 12,
+      dryRun: true,
+      model: 'gpt-5',
+    });
+  });
+
   it.each(['run', 'run|12|extra', 'run|abc', 'run|12|--push', 'run|12|--dry-run|extra'])(
     'rejects %j',
+    (line) => {
+      const args = line.split('|');
+      expect(parseRunArguments(args)).toBeNull();
+    },
+  );
+
+  it.each(['run|12|--model', 'run|12|--model|'])(
+    'rejects a missing or empty model value %j',
     (line) => {
       const args = line.split('|');
       expect(parseRunArguments(args)).toBeNull();
