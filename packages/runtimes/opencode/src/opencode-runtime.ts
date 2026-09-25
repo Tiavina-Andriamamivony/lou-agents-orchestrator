@@ -4,6 +4,7 @@ import type { AgentRuntime } from './runtime.ts';
 import type { AgentRunInput, AgentRunResult, AgentStatus } from './types.ts';
 
 const DEFAULT_TIMEOUT_MS = 300_000;
+const MCP_CONFIG_ENV = 'OPENCODE_CONFIG_CONTENT';
 
 export interface OpenCodeRuntimeOptions {
   readonly binary?: string;
@@ -34,6 +35,7 @@ export class OpenCodeRuntime implements AgentRuntime {
         cwd: input.workspace,
         signal: controller.signal,
         timeoutMs: this.timeoutMs,
+        ...(input.mcp !== undefined ? { env: this.mcpEnv(input.mcp) } : {}),
       });
       this.statuses.set(
         input.runId,
@@ -67,6 +69,14 @@ export class OpenCodeRuntime implements AgentRuntime {
     }
     args.push('--print-logs', input.instructions);
     return args;
+  }
+
+  private mcpEnv(servers: Readonly<Record<string, string>>): Readonly<Record<string, string>> {
+    const mcp: Record<string, { type: string; command: readonly string[]; enabled: boolean }> = {};
+    for (const [name, command] of Object.entries(servers)) {
+      mcp[name] = { type: 'local', command: [command], enabled: true };
+    }
+    return { [MCP_CONFIG_ENV]: JSON.stringify({ mcp }) };
   }
 
   private validate(input: AgentRunInput): void {

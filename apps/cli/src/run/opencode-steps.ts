@@ -12,6 +12,12 @@ interface OpenCodeStepsOptions {
   readonly workspace: string;
   readonly model?: string;
   readonly modelsByAgent?: Readonly<Record<string, string>>;
+  readonly mcp?: Readonly<Record<string, string>>;
+}
+
+interface RunSettings {
+  readonly model?: string;
+  readonly mcp?: Readonly<Record<string, string>>;
 }
 
 const SUMMARY_PATTERN = /^SUMMARY\s*:\s*(.+)$/im;
@@ -22,13 +28,18 @@ const COMMIT_PATTERN = /^PLAN_COMMIT\s*:\s*(.+)$/im;
 const STEP_PATTERN = /^PLAN_STEP\s*:\s*(.+)$/im;
 const TEST_PLAN_PATTERN = /^TEST_PLAN\s*:\s*(.+)$/im;
 const CHANGED_PATTERN = /^CHANGED\s*:\s*(.+)$/im;
-
 export function createOpenCodeSteps(options: OpenCodeStepsOptions): OrchestratorSteps {
-  const { runtime, workspace, model, modelsByAgent } = options;
+  const { runtime, workspace, model, modelsByAgent, mcp } = options;
   const modelFor = (agent: string): string | undefined => modelsByAgent?.[agent] ?? model;
   return {
-    understand: (input) => understand(runtime, input, modelFor('planner')),
-    designTests: (plan) => designTests(runtime, workspace, plan, modelFor('test-designer')),
+    understand: (input) => understand(runtime, input, settingsFor(modelFor('planner'), mcp)),
+    designTests: (plan) =>
+      designTests({
+        runtime,
+        workspace,
+        plan,
+        settings: settingsFor(modelFor('test-designer'), mcp),
+      }),
     writeTests: (plan) =>
       changeNote({
         runtime,
@@ -36,7 +47,7 @@ export function createOpenCodeSteps(options: OpenCodeStepsOptions): Orchestrator
         plan,
         agent: 'test-writer',
         prompt: buildWriteTestsPrompt,
-        model: modelFor('test-writer'),
+        settings: settingsFor(modelFor('test-writer'), mcp),
       }),
     implement: (plan) =>
       changeNote({
@@ -45,22 +56,29 @@ export function createOpenCodeSteps(options: OpenCodeStepsOptions): Orchestrator
         plan,
         agent: 'developer',
         prompt: buildImplementPrompt,
-        model: modelFor('developer'),
+        settings: settingsFor(modelFor('developer'), mcp),
       }),
+  };
+}
+
+function settingsFor(model: string | undefined, mcp: RunSettings['mcp']): RunSettings {
+  return {
+    ...(model !== undefined ? { model } : {}),
+    ...(mcp !== undefined ? { mcp } : {}),
   };
 }
 
 async function understand(
   runtime: AgentRuntime,
   input: UnderstandInput,
-  model: string | undefined,
+  settings: RunSettings,
 ): Promise<Understanding> {
   const result = await runtime.run({
     runId: input.runId,
     agent: 'planner',
     instructions: buildUnderstandPrompt(input),
     workspace: input.workspace,
-    ...withModel(model),
+    ...withSettings(settings),
   });
   return parseUnderstanding(result.stdout);
 }
@@ -71,15 +89,15 @@ async function changeNote(options: {
   readonly plan: PlanDraft;
   readonly agent: string;
   readonly prompt: (input: PlanDraft) => string;
-  readonly model: string | undefined;
+  readonly settings: RunSettings;
 }): Promise<ChangeNote> {
-  const { runtime, workspace, plan, agent, prompt, model } = options;
+  const { runtime, workspace, plan, agent, prompt, settings } = options;
   const result = await runtime.run({
     runId: runIdFor(agent, plan),
     agent,
     instructions: prompt(plan),
     workspace,
-    ...withModel(model),
+    ...withSettings(settings),
   });
   return {
     changedFiles: matchAll(result.stdout, CHANGED_PATTERN),
@@ -87,24 +105,29 @@ async function changeNote(options: {
   };
 }
 
-async function designTests(
-  runtime: AgentRuntime,
-  workspace: string,
-  plan: PlanDraft,
-  model: string | undefined,
-): Promise<{ readonly testPlan: string }> {
-  const result = await runtime.run({
-    runId: runIdFor('test-designer', plan),
+async function designTests(options: {
+  readonly runtime: AgentRuntime;
+  readonly workspace: string;
+  readonly plan: PlanDraft;
+  readonly settings: RunSettings;
+}): Promise<{ readonly testPlan: string }> {
+  const result = await options.runtime.run({
+    runId: runIdFor('test-designer', options.plan),
     agent: 'test-designer',
-    instructions: buildDesignTestsPrompt(plan),
-    workspace,
-    ...withModel(model),
+    instructions: buildDesignTestsPrompt(options.plan),
+    workspace: options.workspace,
+    ...withSettings(options.settings),
   });
-  return { testPlan: matchAll(result.stdout, TEST_PLAN_PATTERN).join('\n') || '(no test plan)' };
+  return {
+    testPlan: matchAll(result.stdout, TEST_PLAN_PATTERN).join('\n') || '(no test plan)',
+  };
 }
 
-function withModel(model: string | undefined): { readonly model?: string } {
-  return model === undefined ? {} : { model };
+function withSettings(settings: RunSettings): RunSettings {
+  return {
+    ...(settings.model !== undefined ? { model: settings.model } : {}),
+    ...(settings.mcp !== undefined ? { mcp: settings.mcp } : {}),
+  };
 }
 
 function buildUnderstandPrompt(input: UnderstandInput): string {

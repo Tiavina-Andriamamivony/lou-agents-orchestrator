@@ -11,7 +11,7 @@ export class NodeCommandRunner implements CommandRunner {
   ): Promise<CommandResult> {
     const child = spawn(command, args, {
       cwd: options.cwd,
-      env: process.env,
+      env: { ...process.env, ...options.env },
       shell: false,
       stdio: ['ignore', 'pipe', 'pipe'],
     });
