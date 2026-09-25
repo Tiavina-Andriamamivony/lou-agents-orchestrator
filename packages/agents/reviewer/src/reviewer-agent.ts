@@ -23,6 +23,7 @@ export interface ReviewDecision {
 export interface ReviewerAgentOptions {
   readonly runtime: AgentRuntime;
   readonly model?: string;
+  readonly modelsByAgent?: Readonly<Record<string, string>>;
 }
 
 const VERDICT_PATTERN = /^VERDICT\s*:\s*(APPROVED|CHANGES_REQUESTED|BLOCKED)\s*$/im;
@@ -46,7 +47,7 @@ export class ReviewerAgent {
       agent: 'reviewer',
       instructions: buildReviewInstructions(request),
       workspace: request.workspace,
-      ...withModel(this.options.model),
+      ...withModel(this.options.modelsByAgent?.['reviewer'] ?? this.options.model),
     });
     return parseReview(result.stdout);
   }

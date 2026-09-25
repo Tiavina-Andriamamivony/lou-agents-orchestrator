@@ -44,6 +44,7 @@ export interface RunEnvironment {
   readonly out: (line: string) => void;
   readonly dryRun: boolean;
   readonly model?: string;
+  readonly modelsByAgent?: Readonly<Record<string, string>>;
 }
 
 interface ProductionRunOptions {
@@ -52,16 +53,19 @@ interface ProductionRunOptions {
   readonly out: (line: string) => void;
   readonly dryRun: boolean;
   readonly model?: string;
+  readonly modelsByAgent?: Readonly<Record<string, string>>;
 }
 
 interface RunArguments {
   readonly issueNumber: number;
   readonly dryRun: boolean;
   readonly model?: string;
+  readonly modelsByAgent?: Readonly<Record<string, string>>;
 }
 
 const DRY_RUN_FLAG = '--dry-run';
 const MODEL_FLAG = '--model';
+const MODEL_BY_AGENT_FLAG = '--model-by-agent';
 
 export function readIssueNumber(value: string | undefined): number | null {
   if (value === undefined) {
@@ -73,33 +77,89 @@ export function readIssueNumber(value: string | undefined): number | null {
   }
   return parsed;
 }
-
 export function parseRunArguments(argv: readonly string[]): RunArguments | null {
   const issueNumber = readIssueNumber(argv[1]);
   if (issueNumber === null) {
     return null;
   }
-  const rest = argv.slice(2);
-  let dryRun = false;
-  let model: string | undefined;
-  for (let index = 0; index < rest.length; index += 1) {
-    const arg = rest[index];
-    if (arg === DRY_RUN_FLAG) {
-      dryRun = true;
-    } else if (arg === MODEL_FLAG) {
-      const value = rest[index + 1];
-      if (value === undefined || value.length === 0) {
-        return null;
-      }
-      model = value;
-      index += 1;
-    } else {
-      return null;
-    }
+  const flags = parseFlags(argv.slice(2));
+  if (flags === null) {
+    return null;
   }
-  return model === undefined ? { issueNumber, dryRun } : { issueNumber, dryRun, model };
+  return {
+    issueNumber,
+    dryRun: flags.dryRun,
+    ...(flags.model !== undefined ? { model: flags.model } : {}),
+    ...(flags.modelsByAgent !== undefined ? { modelsByAgent: flags.modelsByAgent } : {}),
+  };
 }
 
+interface FlagState {
+  dryRun: boolean;
+  model: string | undefined;
+  modelsByAgent: Readonly<Record<string, string>> | undefined;
+}
+
+function parseFlags(rest: readonly string[]): FlagState | null {
+  const flags: FlagState = { dryRun: false, model: undefined, modelsByAgent: undefined };
+  for (let index = 0; index < rest.length; index += 1) {
+    const nextIndex = applyFlag(rest, index, flags);
+    if (nextIndex === null) {
+      return null;
+    }
+    index = nextIndex;
+  }
+  return flags;
+}
+
+function applyFlag(rest: readonly string[], index: number, flags: FlagState): number | null {
+  const flag = rest[index];
+  if (flag === DRY_RUN_FLAG) {
+    flags.dryRun = true;
+    return index;
+  }
+  const value = readFlagValue(rest, index);
+  if (value === null) {
+    return null;
+  }
+  if (flag === MODEL_FLAG) {
+    flags.model = value;
+    return index + 1;
+  }
+  if (flag !== MODEL_BY_AGENT_FLAG) {
+    return null;
+  }
+  const mapping = parseModelsByAgent(value);
+  if (mapping === null) {
+    return null;
+  }
+  flags.modelsByAgent = mapping;
+  return index + 1;
+}
+
+function readFlagValue(rest: readonly string[], index: number): string | null {
+  const value = rest[index + 1];
+  if (value === undefined || value.length === 0) {
+    return null;
+  }
+  return value;
+}
+
+function parseModelsByAgent(value: string): Readonly<Record<string, string>> | null {
+  const entries = value.split(',');
+  if (entries.some((entry) => entry.length === 0)) {
+    return null;
+  }
+  const mapping: Record<string, string> = {};
+  for (const entry of entries) {
+    const separator = entry.indexOf('=');
+    if (separator <= 0 || separator === entry.length - 1) {
+      return null;
+    }
+    mapping[entry.slice(0, separator)] = entry.slice(separator + 1);
+  }
+  return mapping;
+}
 export function runProduction(options: ProductionRunOptions): Promise<number> {
   const auditFile = join(options.cwd, '.lou', 'runs', `run-${options.issueNumber}.jsonl`);
   return runTicket({
@@ -115,6 +175,7 @@ export function runProduction(options: ProductionRunOptions): Promise<number> {
     out: options.out,
     dryRun: options.dryRun,
     ...(options.model !== undefined ? { model: options.model } : {}),
+    ...(options.modelsByAgent !== undefined ? { modelsByAgent: options.modelsByAgent } : {}),
   });
 }
 
@@ -131,6 +192,7 @@ export async function runTicket(env: RunEnvironment): Promise<number> {
     runtime: env.runtime,
     workspace: env.workspace,
     ...(env.model !== undefined ? { model: env.model } : {}),
+    ...(env.modelsByAgent !== undefined ? { modelsByAgent: env.modelsByAgent } : {}),
   });
   if (env.dryRun) {
     return runDryRun(issue, env, steps);
@@ -145,6 +207,7 @@ export async function runTicket(env: RunEnvironment): Promise<number> {
     reviewer: new ReviewerAgent({
       runtime: env.runtime,
       ...(env.model !== undefined ? { model: env.model } : {}),
+      ...(env.modelsByAgent !== undefined ? { modelsByAgent: env.modelsByAgent } : {}),
     }),
     tests: env.tests,
     git: env.git,

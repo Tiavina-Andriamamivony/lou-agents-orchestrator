@@ -50,6 +50,7 @@ function buildEnv(
   replies: readonly AgentRunResult[],
   issue: GitHubIssue = ISSUE,
   model?: string,
+  modelsByAgent?: Readonly<Record<string, string>>,
 ): EnvFixture {
   const git = createGitSpy();
   const audit = createAuditSpy();
@@ -70,6 +71,7 @@ function buildEnv(
     out: (line: string) => out.push(line),
     dryRun: false,
     ...(model !== undefined ? { model } : {}),
+    ...(modelsByAgent !== undefined ? { modelsByAgent } : {}),
   };
   return { env, git, audit, github, runtime, out };
 }
@@ -181,6 +183,24 @@ describe('runTicket', () => {
     for (const run of runtime.runs) {
       expect(run.model).toBe('gpt-5');
     }
+  });
+
+  it('prefers the per-agent model over the global model', async () => {
+    const { env, runtime } = buildEnv(happyReplies(), ISSUE, 'gpt-5', {
+      planner: 'opus',
+      reviewer: 'flash',
+    });
+
+    const code = await runTicket(env);
+
+    expect(code).toBe(0);
+    expect(runtime.runs.map((run) => `${run.agent}:${run.model ?? '(none)'}`)).toEqual([
+      'planner:opus',
+      'test-designer:gpt-5',
+      'test-writer:gpt-5',
+      'developer:gpt-5',
+      'reviewer:flash',
+    ]);
   });
 });
 
@@ -307,6 +327,36 @@ describe('parseRunArguments', () => {
       dryRun: true,
       model: 'gpt-5',
     });
+  });
+
+  it('parses a --model-by-agent mapping', () => {
+    expect(
+      parseRunArguments(['run', '12', '--model-by-agent', 'planner=opus,reviewer=flash']),
+    ).toEqual({
+      issueNumber: 12,
+      dryRun: false,
+      modelsByAgent: { planner: 'opus', reviewer: 'flash' },
+    });
+  });
+
+  it('lets the per-agent mapping override the global --model', () => {
+    const parsed = parseRunArguments([
+      'run',
+      '12',
+      '--model',
+      'gpt-5',
+      '--model-by-agent',
+      'planner=opus',
+    ]);
+    expect(parsed?.modelsByAgent).toEqual({ planner: 'opus' });
+  });
+
+  it('rejects malformed --model-by-agent values', () => {
+    expect(parseRunArguments(['run', '12', '--model-by-agent', 'planner'])).toBeNull();
+    expect(parseRunArguments(['run', '12', '--model-by-agent', 'planner='])).toBeNull();
+    expect(parseRunArguments(['run', '12', '--model-by-agent', '=opus'])).toBeNull();
+    expect(parseRunArguments(['run', '12', '--model-by-agent', 'planner=opus,'])).toBeNull();
+    expect(parseRunArguments(['run', '12', '--model-by-agent'])).toBeNull();
   });
 
   it.each(['run', 'run|12|extra', 'run|abc', 'run|12|--push', 'run|12|--dry-run|extra'])(

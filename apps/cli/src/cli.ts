@@ -13,7 +13,7 @@ const USAGE = `Usage: lou <command> [args]
 Commands:
   doctor Check the runtime prerequisites: lou doctor.
   init   Read-only project onboarding report: lou init [--json].
-  run    Drive a GitHub issue to a pull request: lou run <issue-number> [--dry-run] [--model <name>].`;
+  run    Drive a GitHub issue to a pull request: lou run <issue-number> [--dry-run] [--model <name>] [--model-by-agent planner=...,developer=...].`;
 
 const HELP_COMMANDS = new Set(['--help', '-h', 'help']);
 const VERSION_COMMANDS = new Set(['--version', '-v']);
@@ -60,7 +60,9 @@ function handleInit(argv: readonly string[], env: CliEnv): Promise<number> {
 function handleRun(argv: readonly string[], env: CliEnv): Promise<number> {
   const parsed = parseRunArguments(argv);
   if (parsed === null) {
-    env.err('Usage: lou run <issue-number> [--dry-run] [--model <name>]');
+    env.err(
+      'Usage: lou run <issue-number> [--dry-run] [--model <name>] [--model-by-agent planner=...]',
+    );
     return Promise.resolve(1);
   }
   return runProduction({
@@ -69,6 +71,7 @@ function handleRun(argv: readonly string[], env: CliEnv): Promise<number> {
     cwd: env.cwd,
     out: env.out,
     ...(parsed.model !== undefined ? { model: parsed.model } : {}),
+    ...(parsed.modelsByAgent !== undefined ? { modelsByAgent: parsed.modelsByAgent } : {}),
   }).catch((error: unknown) => {
     env.err(`lou run failed: ${errorMessage(error)}`);
     return 1;
