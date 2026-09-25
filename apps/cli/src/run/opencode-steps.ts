@@ -11,6 +11,7 @@ interface OpenCodeStepsOptions {
   readonly runtime: AgentRuntime;
   readonly workspace: string;
   readonly model?: string;
+  readonly modelsByAgent?: Readonly<Record<string, string>>;
 }
 
 const SUMMARY_PATTERN = /^SUMMARY\s*:\s*(.+)$/im;
@@ -23,10 +24,11 @@ const TEST_PLAN_PATTERN = /^TEST_PLAN\s*:\s*(.+)$/im;
 const CHANGED_PATTERN = /^CHANGED\s*:\s*(.+)$/im;
 
 export function createOpenCodeSteps(options: OpenCodeStepsOptions): OrchestratorSteps {
-  const { runtime, workspace, model } = options;
+  const { runtime, workspace, model, modelsByAgent } = options;
+  const modelFor = (agent: string): string | undefined => modelsByAgent?.[agent] ?? model;
   return {
-    understand: (input) => understand(runtime, input, model),
-    designTests: (plan) => designTests(runtime, workspace, plan, model),
+    understand: (input) => understand(runtime, input, modelFor('planner')),
+    designTests: (plan) => designTests(runtime, workspace, plan, modelFor('test-designer')),
     writeTests: (plan) =>
       changeNote({
         runtime,
@@ -34,7 +36,7 @@ export function createOpenCodeSteps(options: OpenCodeStepsOptions): Orchestrator
         plan,
         agent: 'test-writer',
         prompt: buildWriteTestsPrompt,
-        model,
+        model: modelFor('test-writer'),
       }),
     implement: (plan) =>
       changeNote({
@@ -43,7 +45,7 @@ export function createOpenCodeSteps(options: OpenCodeStepsOptions): Orchestrator
         plan,
         agent: 'developer',
         prompt: buildImplementPrompt,
-        model,
+        model: modelFor('developer'),
       }),
   };
 }
