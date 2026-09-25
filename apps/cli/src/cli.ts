@@ -4,10 +4,14 @@ import { createNodeProjectReader } from './init/project-reader.ts';
 import type { ProjectReader } from './init/project-reader.ts';
 import { parseRunArguments, runProduction } from './run/run-command.ts';
 import { parseInitJsonFlag, runInit } from './init/run-init.ts';
+import { createRealDoctorProbes } from './doctor/real-probes.ts';
+import { formatDoctorReport, runDoctor } from './doctor/doctor-command.ts';
+import type { DoctorProbes } from './doctor/doctor-command.ts';
 
 const USAGE = `Usage: lou <command> [args]
 
 Commands:
+  doctor Check the runtime prerequisites: lou doctor.
   init   Read-only project onboarding report: lou init [--json].
   run    Drive a GitHub issue to a pull request: lou run <issue-number> [--dry-run].`;
 
@@ -19,6 +23,7 @@ export interface CliEnv {
   readonly cwd: string;
   readonly out: (line: string) => void;
   readonly err: (line: string) => void;
+  readonly doctorProbes?: DoctorProbes;
 }
 
 type CommandHandler = (argv: readonly string[], env: CliEnv) => Promise<number>;
@@ -26,7 +31,19 @@ type CommandHandler = (argv: readonly string[], env: CliEnv) => Promise<number>;
 const COMMANDS: Record<string, CommandHandler> = {
   init: handleInit,
   run: handleRun,
+  doctor: handleDoctor,
 };
+
+function handleDoctor(argv: readonly string[], env: CliEnv): Promise<number> {
+  if (argv.length > 1) {
+    env.err('Usage: lou doctor');
+    return Promise.resolve(1);
+  }
+  return runDoctor(env.doctorProbes ?? createRealDoctorProbes(env.cwd)).then((report) => {
+    env.out(formatDoctorReport(report));
+    return report.code;
+  });
+}
 
 function handleInit(argv: readonly string[], env: CliEnv): Promise<number> {
   const json = parseInitJsonFlag(argv);
