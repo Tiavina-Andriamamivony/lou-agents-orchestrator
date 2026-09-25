@@ -22,6 +22,7 @@ export interface ReviewDecision {
 
 export interface ReviewerAgentOptions {
   readonly runtime: AgentRuntime;
+  readonly model?: string;
 }
 
 const VERDICT_PATTERN = /^VERDICT\s*:\s*(APPROVED|CHANGES_REQUESTED|BLOCKED)\s*$/im;
@@ -33,21 +34,26 @@ const VERDICT_TO_COMMAND: Readonly<Partial<Record<ReviewVerdict, Command>>> = {
 };
 
 export class ReviewerAgent {
-  private readonly runtime: AgentRuntime;
+  private readonly options: ReviewerAgentOptions;
 
   constructor(options: ReviewerAgentOptions) {
-    this.runtime = options.runtime;
+    this.options = options;
   }
 
   async review(request: ReviewRequest): Promise<ReviewDecision> {
-    const result = await this.runtime.run({
+    const result = await this.options.runtime.run({
       runId: request.runId,
       agent: 'reviewer',
       instructions: buildReviewInstructions(request),
       workspace: request.workspace,
+      ...withModel(this.options.model),
     });
     return parseReview(result.stdout);
   }
+}
+
+function withModel(model: string | undefined): { readonly model?: string } {
+  return model === undefined ? {} : { model };
 }
 
 function buildReviewInstructions(request: ReviewRequest): string {
