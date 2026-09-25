@@ -7,7 +7,14 @@ import type { GitAdapter } from '@lou/git';
 import { OpenCodeRuntime } from '@lou/opencode-runtime';
 import type { AgentRuntime } from '@lou/opencode-runtime';
 import { Orchestrator } from '@lou/orchestrator';
-import type { OrchestratorOutcome, OrchestratorStatus } from '@lou/orchestrator';
+import type {
+  HumanKeeper,
+  OrchestratorOutcome,
+  OrchestratorStatus,
+  OrchestratorSteps,
+  PlanDraft,
+  UnderstandInput,
+} from '@lou/orchestrator';
 import { ReviewerAgent } from '@lou/reviewer';
 import { Workflow } from '@lou/state-machine';
 import { NodeTestRunner } from '@lou/test-runner';
@@ -35,13 +42,22 @@ export interface RunEnvironment {
   readonly conventions: string;
   readonly ask: (question: string) => Promise<string>;
   readonly out: (line: string) => void;
+  readonly dryRun: boolean;
 }
 
 interface ProductionRunOptions {
   readonly issueNumber: number;
   readonly cwd: string;
   readonly out: (line: string) => void;
+  readonly dryRun: boolean;
 }
+
+interface RunArguments {
+  readonly issueNumber: number;
+  readonly dryRun: boolean;
+}
+
+const DRY_RUN_FLAG = '--dry-run';
 
 export function readIssueNumber(value: string | undefined): number | null {
   if (value === undefined) {
@@ -52,6 +68,21 @@ export function readIssueNumber(value: string | undefined): number | null {
     return null;
   }
   return parsed;
+}
+
+export function parseRunArguments(argv: readonly string[]): RunArguments | null {
+  const issueNumber = readIssueNumber(argv[1]);
+  if (issueNumber === null) {
+    return null;
+  }
+  const rest = argv.slice(2);
+  if (rest.length === 0) {
+    return { issueNumber, dryRun: false };
+  }
+  if (rest.length === 1 && rest[0] === DRY_RUN_FLAG) {
+    return { issueNumber, dryRun: true };
+  }
+  return null;
 }
 
 export function runProduction(options: ProductionRunOptions): Promise<number> {
@@ -67,6 +98,7 @@ export function runProduction(options: ProductionRunOptions): Promise<number> {
     conventions: 'conventional commits',
     ask: terminalQuestion,
     out: options.out,
+    dryRun: options.dryRun,
   });
 }
 
@@ -79,12 +111,16 @@ export async function runTicket(env: RunEnvironment): Promise<number> {
     env.out(`Issue #${issue.number} is already closed.`);
     return 1;
   }
+  const steps = createOpenCodeSteps({ runtime: env.runtime, workspace: env.workspace });
+  if (env.dryRun) {
+    return runDryRun(issue, env, steps);
+  }
   const orchestrator = new Orchestrator({
     runId: `run-${issue.number}`,
     issue,
     workspace: env.workspace,
     workflow: new Workflow(),
-    steps: createOpenCodeSteps({ runtime: env.runtime, workspace: env.workspace }),
+    steps,
     keeper: createTerminalKeeper({ ask: env.ask, out: env.out }),
     reviewer: new ReviewerAgent({ runtime: env.runtime }),
     tests: env.tests,
@@ -95,6 +131,46 @@ export async function runTicket(env: RunEnvironment): Promise<number> {
   });
   const outcome = await orchestrator.run();
   return report(outcome, env.out);
+}
+
+async function runDryRun(
+  issue: GitHubIssue,
+  env: RunEnvironment,
+  steps: OrchestratorSteps,
+): Promise<number> {
+  const keeper: HumanKeeper = createTerminalKeeper({ ask: env.ask, out: env.out });
+  let understanding = await steps.understand(understandInput(issue, env, []));
+  if (understanding.questions.length > 0) {
+    const answers = await keeper.askClarifications(understanding.questions);
+    understanding = await steps.understand(understandInput(issue, env, answers));
+  }
+  printPlan(understanding.plan, env.out);
+  return 0;
+}
+
+function understandInput(
+  issue: GitHubIssue,
+  env: RunEnvironment,
+  feedback: readonly string[],
+): UnderstandInput {
+  return {
+    runId: `dry-run-${issue.number}`,
+    issue,
+    workspace: env.workspace,
+    feedback,
+  };
+}
+
+function printPlan(plan: PlanDraft, out: (line: string) => void): void {
+  out('');
+  out(`Plan: ${plan.title}`);
+  out(`Branch: ${plan.branchName}`);
+  out(`Commit: ${plan.commitMessage}`);
+  out('Steps:');
+  plan.steps.forEach((step, index) => {
+    out(`${index + 1}. ${step}`);
+  });
+  out('Dry run complete — no branch, commits, tests or implementation were performed.');
 }
 
 async function readIssue(env: RunEnvironment): Promise<GitHubIssue | null> {
