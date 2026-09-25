@@ -2,7 +2,7 @@ import type { GitHubAdapter, GitHubIssue } from '@lou/github';
 import type { AgentRunResult } from '@lou/opencode-runtime';
 import { describe, expect, it } from 'vitest';
 import type { RunEnvironment } from '../src/run/run-command';
-import { readIssueNumber, runTicket } from '../src/run/run-command';
+import { parseRunArguments, readIssueNumber, runTicket } from '../src/run/run-command';
 import {
   createAuditSpy,
   createFakeRuntime,
@@ -64,6 +64,7 @@ function buildEnv(replies: readonly AgentRunResult[], issue: GitHubIssue = ISSUE
     conventions: 'conventional commits',
     ask: () => Promise.resolve('y'),
     out: (line: string) => out.push(line),
+    dryRun: false,
   };
   return { env, git, audit, github, runtime, out };
 }
@@ -124,6 +125,7 @@ describe('runTicket', () => {
       conventions: 'conventional commits',
       ask: () => Promise.resolve('y'),
       out: (line: string) => out.push(line),
+      dryRun: false,
     };
 
     const code = await runTicket(env);
@@ -163,6 +165,100 @@ describe('runTicket', () => {
     expect(asked.some((question) => question.includes('Approve review'))).toBe(true);
     expect(out.join('\n')).toContain('Plan gate');
   });
+});
+
+describe('runTicket in dry-run', () => {
+  it('prints the plan and makes no git, github, test or implementation calls', async () => {
+    const git = createGitSpy();
+    const audit = createAuditSpy();
+    const github = createGitHubSpy(ISSUE);
+    const tests = createTestRunner(true);
+    const runtime = createFakeRuntime([resultFor(PLANNER_STDOUT)]);
+    const out: string[] = [];
+    const env: RunEnvironment = {
+      issueNumber: ISSUE.number,
+      workspace: '/work',
+      github: github.github,
+      git: git.git,
+      tests: tests.runner,
+      audit: audit.log,
+      runtime,
+      conventions: 'conventional commits',
+      ask: () => Promise.resolve('y'),
+      out: (line: string) => out.push(line),
+      dryRun: true,
+    };
+
+    const code = await runTicket(env);
+
+    expect(code).toBe(0);
+    expect(runtime.runs.map((run) => run.agent)).toEqual(['planner']);
+    expect(git.branches).toEqual([]);
+    expect(git.commits).toEqual([]);
+    expect(git.pushes).toBe(0);
+    expect(github.created).toHaveLength(0);
+    expect(tests.runs).toEqual([]);
+    const output = out.join('\n');
+    expect(output).toContain('Plan: feat: reset password');
+    expect(output).toContain('Branch: feature/reset-password');
+    expect(output).toContain('Commit: feat(auth): add password reset');
+  });
+
+  it('asks for clarifications and re-plans before printing the plan', async () => {
+    const withQuestion = [
+      'SUMMARY: implement the reset password flow',
+      'QUESTION: auth or not?',
+      'PLAN_TITLE: feat: reset password',
+      'PLAN_BRANCH: feature/reset-password',
+      'PLAN_COMMIT: feat(auth): add password reset',
+      'PLAN_STEP: add the reset endpoint',
+    ].join('\n');
+    const answered: string[] = [];
+    const runtime = createFakeRuntime([resultFor(withQuestion), resultFor(PLANNER_STDOUT)]);
+    const env: RunEnvironment = {
+      issueNumber: ISSUE.number,
+      workspace: '/work',
+      github: createGitHubSpy(ISSUE).github,
+      git: createGitSpy().git,
+      tests: createTestRunner(true).runner,
+      audit: createAuditSpy().log,
+      runtime,
+      conventions: 'conventional commits',
+      ask: (question: string) => {
+        answered.push(question);
+        return Promise.resolve('yes, auth');
+      },
+      out: () => undefined,
+      dryRun: true,
+    };
+
+    const code = await runTicket(env);
+
+    expect(code).toBe(0);
+    expect(answered).toEqual(['auth or not? ']);
+    expect(runtime.runs.map((run) => run.agent)).toEqual(['planner', 'planner']);
+  });
+});
+
+describe('parseRunArguments', () => {
+  it('parses an issue number', () => {
+    expect(parseRunArguments(['run', '12'])).toEqual({ issueNumber: 12, dryRun: false });
+  });
+
+  it('parses a --dry-run flag', () => {
+    expect(parseRunArguments(['run', '12', '--dry-run'])).toEqual({
+      issueNumber: 12,
+      dryRun: true,
+    });
+  });
+
+  it.each(['run', 'run|12|extra', 'run|abc', 'run|12|--push', 'run|12|--dry-run|extra'])(
+    'rejects %j',
+    (line) => {
+      const args = line.split('|');
+      expect(parseRunArguments(args)).toBeNull();
+    },
+  );
 });
 
 describe('readIssueNumber', () => {

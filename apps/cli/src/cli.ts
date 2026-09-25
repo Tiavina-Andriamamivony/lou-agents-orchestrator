@@ -3,13 +3,13 @@ import { pathToFileURL } from 'node:url';
 import { createNodeProjectReader } from './init/project-reader.ts';
 import type { ProjectReader } from './init/project-reader.ts';
 import { runInit } from './init/run-init.ts';
-import { readIssueNumber, runProduction } from './run/run-command.ts';
+import { parseRunArguments, runProduction } from './run/run-command.ts';
 
 const USAGE = `Usage: lou <command> [args]
 
 Commands:
   init   Read-only project onboarding report (no modification).
-  run    Drive a GitHub issue to a pull request: lou run <issue-number>.`;
+  run    Drive a GitHub issue to a pull request: lou run <issue-number> [--dry-run].`;
 
 const HELP_COMMANDS = new Set(['--help', '-h', 'help']);
 const VERSION_COMMANDS = new Set(['--version', '-v']);
@@ -33,12 +33,17 @@ const COMMANDS: Record<string, CommandHandler> = {
 };
 
 function handleRun(argv: readonly string[], env: CliEnv): Promise<number> {
-  const issueNumber = readIssueNumber(argv[1]);
-  if (issueNumber === null) {
-    env.err('Usage: lou run <issue-number>');
+  const parsed = parseRunArguments(argv);
+  if (parsed === null) {
+    env.err('Usage: lou run <issue-number> [--dry-run]');
     return Promise.resolve(1);
   }
-  return runProduction({ issueNumber, cwd: env.cwd, out: env.out }).catch((error: unknown) => {
+  return runProduction({
+    issueNumber: parsed.issueNumber,
+    dryRun: parsed.dryRun,
+    cwd: env.cwd,
+    out: env.out,
+  }).catch((error: unknown) => {
     env.err(`lou run failed: ${errorMessage(error)}`);
     return 1;
   });
