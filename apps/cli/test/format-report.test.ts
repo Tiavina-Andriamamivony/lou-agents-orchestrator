@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatInitReport } from '../src/init/format-report';
+import { formatInitReport, formatInitReportJson } from '../src/init/format-report';
 import type { ProjectReport } from '../src/init/project-report';
 
 const FULL_REPORT: ProjectReport = {
@@ -61,6 +61,42 @@ describe('formatInitReport', () => {
         'Docs: none',
         'CI: no',
         'Constitution: not found',
+      ].join('\n') + '\n',
+    );
+  });
+});
+
+describe('formatInitReportJson', () => {
+  it('prints the full report as stable JSON', () => {
+    expect(formatInitReportJson(FULL_REPORT)).toBe(
+      [
+        '{',
+        '  "packageManager": "pnpm",',
+        '  "gitRepository": true,',
+        '  "commitConventions": [',
+        '    "conventional commits"',
+        '  ],',
+        '  "docs": [',
+        '    "README.md"',
+        '  ],',
+        '  "ci": true,',
+        '  "constitution": true',
+        '}',
+      ].join('\n') + '\n',
+    );
+  });
+
+  it('prints nulls and empty collections for a bare repository', () => {
+    expect(formatInitReportJson(EMPTY_REPORT)).toBe(
+      [
+        '{',
+        '  "packageManager": null,',
+        '  "gitRepository": false,',
+        '  "commitConventions": [],',
+        '  "docs": [],',
+        '  "ci": false,',
+        '  "constitution": false',
+        '}',
       ].join('\n') + '\n',
     );
   });
