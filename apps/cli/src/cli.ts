@@ -2,13 +2,13 @@ import { readFileSync, realpathSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { createNodeProjectReader } from './init/project-reader.ts';
 import type { ProjectReader } from './init/project-reader.ts';
-import { runInit } from './init/run-init.ts';
 import { parseRunArguments, runProduction } from './run/run-command.ts';
+import { parseInitJsonFlag, runInit } from './init/run-init.ts';
 
 const USAGE = `Usage: lou <command> [args]
 
 Commands:
-  init   Read-only project onboarding report (no modification).
+  init   Read-only project onboarding report: lou init [--json].
   run    Drive a GitHub issue to a pull request: lou run <issue-number> [--dry-run].`;
 
 const HELP_COMMANDS = new Set(['--help', '-h', 'help']);
@@ -24,13 +24,21 @@ export interface CliEnv {
 type CommandHandler = (argv: readonly string[], env: CliEnv) => Promise<number>;
 
 const COMMANDS: Record<string, CommandHandler> = {
-  init: (_argv, env) =>
-    runInit({ reader: env.reader, root: env.cwd }).then((report) => {
-      env.out(report);
-      return 0;
-    }),
+  init: handleInit,
   run: handleRun,
 };
+
+function handleInit(argv: readonly string[], env: CliEnv): Promise<number> {
+  const json = parseInitJsonFlag(argv);
+  if (json === null) {
+    env.err('Usage: lou init [--json]');
+    return Promise.resolve(1);
+  }
+  return runInit({ reader: env.reader, root: env.cwd, json }).then((report) => {
+    env.out(report);
+    return 0;
+  });
+}
 
 function handleRun(argv: readonly string[], env: CliEnv): Promise<number> {
   const parsed = parseRunArguments(argv);

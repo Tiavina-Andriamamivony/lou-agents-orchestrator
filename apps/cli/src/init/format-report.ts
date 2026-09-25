@@ -1,5 +1,26 @@
 import type { ProjectReport } from './project-report.ts';
 
+interface InitReportJson {
+  readonly packageManager: string | null;
+  readonly gitRepository: boolean;
+  readonly commitConventions: readonly string[];
+  readonly docs: readonly string[];
+  readonly ci: boolean;
+  readonly constitution: boolean;
+}
+
+export function formatInitReportJson(report: ProjectReport): string {
+  const json: InitReportJson = {
+    packageManager: report.packageManager,
+    gitRepository: report.isGitRepository,
+    commitConventions: report.commitConventions,
+    docs: report.docs,
+    ci: report.hasCI,
+    constitution: report.constitutionPresent,
+  };
+  return `${JSON.stringify(json, null, 2)}\n`;
+}
+
 export function formatInitReport(report: ProjectReport): string {
   const block: string[] = ['Project successfully onboarded.', ''];
   const detected = [
