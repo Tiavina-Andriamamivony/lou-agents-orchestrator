@@ -49,8 +49,11 @@ interface EnvFixture {
 function buildEnv(
   replies: readonly AgentRunResult[],
   issue: GitHubIssue = ISSUE,
-  model?: string,
-  modelsByAgent?: Readonly<Record<string, string>>,
+  settings?: {
+    readonly model?: string;
+    readonly modelsByAgent?: Readonly<Record<string, string>>;
+    readonly mcp?: Readonly<Record<string, string>>;
+  },
 ): EnvFixture {
   const git = createGitSpy();
   const audit = createAuditSpy();
@@ -70,8 +73,9 @@ function buildEnv(
     ask: () => Promise.resolve('y'),
     out: (line: string) => out.push(line),
     dryRun: false,
-    ...(model !== undefined ? { model } : {}),
-    ...(modelsByAgent !== undefined ? { modelsByAgent } : {}),
+    ...(settings?.model !== undefined ? { model: settings.model } : {}),
+    ...(settings?.modelsByAgent !== undefined ? { modelsByAgent: settings.modelsByAgent } : {}),
+    ...(settings?.mcp !== undefined ? { mcp: settings.mcp } : {}),
   };
   return { env, git, audit, github, runtime, out };
 }
@@ -174,7 +178,7 @@ describe('runTicket', () => {
   });
 
   it('routes the configured model to every agent run', async () => {
-    const { env, runtime } = buildEnv(happyReplies(), ISSUE, 'gpt-5');
+    const { env, runtime } = buildEnv(happyReplies(), ISSUE, { model: 'gpt-5' });
 
     const code = await runTicket(env);
 
@@ -186,9 +190,9 @@ describe('runTicket', () => {
   });
 
   it('prefers the per-agent model over the global model', async () => {
-    const { env, runtime } = buildEnv(happyReplies(), ISSUE, 'gpt-5', {
-      planner: 'opus',
-      reviewer: 'flash',
+    const { env, runtime } = buildEnv(happyReplies(), ISSUE, {
+      model: 'gpt-5',
+      modelsByAgent: { planner: 'opus', reviewer: 'flash' },
     });
 
     const code = await runTicket(env);
@@ -201,6 +205,20 @@ describe('runTicket', () => {
       'developer:gpt-5',
       'reviewer:flash',
     ]);
+  });
+
+  it('mounts the configured MCP servers on every agent run', async () => {
+    const { env, runtime } = buildEnv(happyReplies(), ISSUE, {
+      mcp: { sqlite: 'uvx', demo: 'node' },
+    });
+
+    const code = await runTicket(env);
+
+    expect(code).toBe(0);
+    expect(runtime.runs).toHaveLength(5);
+    for (const run of runtime.runs) {
+      expect(run.mcp).toEqual({ sqlite: 'uvx', demo: 'node' });
+    }
   });
 });
 
@@ -357,6 +375,33 @@ describe('parseRunArguments', () => {
     expect(parseRunArguments(['run', '12', '--model-by-agent', '=opus'])).toBeNull();
     expect(parseRunArguments(['run', '12', '--model-by-agent', 'planner=opus,'])).toBeNull();
     expect(parseRunArguments(['run', '12', '--model-by-agent'])).toBeNull();
+  });
+
+  it('parses repeated --mcp flags and accumulates the servers', () => {
+    expect(
+      parseRunArguments([
+        'run',
+        '12',
+        '--mcp',
+        'sqlite=uvx,demo=node',
+        '--mcp',
+        'context7=https://mcp.context7.com/mcp',
+      ]),
+    ).toEqual({
+      issueNumber: 12,
+      dryRun: false,
+      mcp: {
+        sqlite: 'uvx',
+        demo: 'node',
+        context7: 'https://mcp.context7.com/mcp',
+      },
+    });
+  });
+
+  it('rejects malformed --mcp values', () => {
+    expect(parseRunArguments(['run', '12', '--mcp', 'sqlite'])).toBeNull();
+    expect(parseRunArguments(['run', '12', '--mcp', '=uvx'])).toBeNull();
+    expect(parseRunArguments(['run', '12', '--mcp'])).toBeNull();
   });
 
   it.each(['run', 'run|12|extra', 'run|abc', 'run|12|--push', 'run|12|--dry-run|extra'])(

@@ -58,6 +58,22 @@ describe('OpenCodeRuntime', () => {
     expect(runner.calls[0]?.args).toContain('--model');
   });
 
+  it('mounts MCP servers through the OPENCODE_CONFIG_CONTENT env var', async () => {
+    const runner = new FakeRunner();
+    const runtime = new OpenCodeRuntime({ runner });
+
+    const pending = runtime.run({ ...INPUT, mcp: { sqlite: 'uvx', demo: 'node' } });
+    runner.complete(SUCCESS);
+    await pending;
+
+    const content = runner.calls[0]?.options.env?.OPENCODE_CONFIG_CONTENT;
+    expect(content).toContain('"sqlite"');
+    expect(content).toContain('"command"');
+    expect(content).toContain('"uvx"');
+    const config = JSON.parse(content ?? '{}') as { readonly mcp: Record<string, unknown> };
+    expect(config.mcp.sqlite).toEqual({ type: 'local', command: ['uvx'], enabled: true });
+  });
+
   it('records a running status while the run is in flight', async () => {
     const runner = new FakeRunner();
     const runtime = new OpenCodeRuntime({ runner });

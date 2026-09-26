@@ -37,4 +37,15 @@ describe('NodeCommandRunner', () => {
   it('rejects when the binary does not exist', async () => {
     await expect(runner.run('no-such-binary-xyz', [], { cwd })).rejects.toBeInstanceOf(Error);
   });
+
+  it('passes extra environment variables to the child process', async () => {
+    const result = await runner.run(
+      'node',
+      ['-e', 'process.stdout.write(process.env.LOU_SMOKE_ENV ?? "absent")'],
+      { cwd, env: { LOU_SMOKE_ENV: 'present' } },
+    );
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toBe('present');
+  });
 });

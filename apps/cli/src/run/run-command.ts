@@ -45,6 +45,7 @@ export interface RunEnvironment {
   readonly dryRun: boolean;
   readonly model?: string;
   readonly modelsByAgent?: Readonly<Record<string, string>>;
+  readonly mcp?: Readonly<Record<string, string>>;
 }
 
 interface ProductionRunOptions {
@@ -54,6 +55,7 @@ interface ProductionRunOptions {
   readonly dryRun: boolean;
   readonly model?: string;
   readonly modelsByAgent?: Readonly<Record<string, string>>;
+  readonly mcp?: Readonly<Record<string, string>>;
 }
 
 interface RunArguments {
@@ -61,11 +63,13 @@ interface RunArguments {
   readonly dryRun: boolean;
   readonly model?: string;
   readonly modelsByAgent?: Readonly<Record<string, string>>;
+  readonly mcp?: Readonly<Record<string, string>>;
 }
 
 const DRY_RUN_FLAG = '--dry-run';
 const MODEL_FLAG = '--model';
 const MODEL_BY_AGENT_FLAG = '--model-by-agent';
+const MCP_FLAG = '--mcp';
 
 export function readIssueNumber(value: string | undefined): number | null {
   if (value === undefined) {
@@ -91,6 +95,7 @@ export function parseRunArguments(argv: readonly string[]): RunArguments | null 
     dryRun: flags.dryRun,
     ...(flags.model !== undefined ? { model: flags.model } : {}),
     ...(flags.modelsByAgent !== undefined ? { modelsByAgent: flags.modelsByAgent } : {}),
+    ...(Object.keys(flags.mcp).length > 0 ? { mcp: flags.mcp } : {}),
   };
 }
 
@@ -98,10 +103,24 @@ interface FlagState {
   dryRun: boolean;
   model: string | undefined;
   modelsByAgent: Readonly<Record<string, string>> | undefined;
+  mcp: Record<string, string>;
 }
 
+type FlagApplier = (value: string, flags: FlagState) => boolean;
+
+const FLAG_APPLIERS: Readonly<Record<string, FlagApplier>> = {
+  [MODEL_FLAG]: applyModel,
+  [MODEL_BY_AGENT_FLAG]: applyModelsByAgent,
+  [MCP_FLAG]: applyMcp,
+};
+
 function parseFlags(rest: readonly string[]): FlagState | null {
-  const flags: FlagState = { dryRun: false, model: undefined, modelsByAgent: undefined };
+  const flags: FlagState = {
+    dryRun: false,
+    model: undefined,
+    modelsByAgent: undefined,
+    mcp: {},
+  };
   for (let index = 0; index < rest.length; index += 1) {
     const nextIndex = applyFlag(rest, index, flags);
     if (nextIndex === null) {
@@ -118,23 +137,46 @@ function applyFlag(rest: readonly string[], index: number, flags: FlagState): nu
     flags.dryRun = true;
     return index;
   }
+  if (flag === undefined) {
+    return null;
+  }
+  const applier = FLAG_APPLIERS[flag];
+  if (applier === undefined) {
+    return null;
+  }
   const value = readFlagValue(rest, index);
   if (value === null) {
     return null;
   }
-  if (flag === MODEL_FLAG) {
-    flags.model = value;
-    return index + 1;
-  }
-  if (flag !== MODEL_BY_AGENT_FLAG) {
+  if (!applier(value, flags)) {
     return null;
   }
-  const mapping = parseModelsByAgent(value);
+  return index + 1;
+}
+
+function applyModel(value: string, flags: FlagState): boolean {
+  flags.model = value;
+  return true;
+}
+
+function applyModelsByAgent(value: string, flags: FlagState): boolean {
+  const mapping = parseEqualsList(value);
   if (mapping === null) {
-    return null;
+    return false;
   }
   flags.modelsByAgent = mapping;
-  return index + 1;
+  return true;
+}
+
+function applyMcp(value: string, flags: FlagState): boolean {
+  const mapping = parseEqualsList(value);
+  if (mapping === null) {
+    return false;
+  }
+  for (const [name, command] of Object.entries(mapping)) {
+    flags.mcp[name] = command;
+  }
+  return true;
 }
 
 function readFlagValue(rest: readonly string[], index: number): string | null {
@@ -145,7 +187,7 @@ function readFlagValue(rest: readonly string[], index: number): string | null {
   return value;
 }
 
-function parseModelsByAgent(value: string): Readonly<Record<string, string>> | null {
+function parseEqualsList(value: string): Readonly<Record<string, string>> | null {
   const entries = value.split(',');
   if (entries.some((entry) => entry.length === 0)) {
     return null;
@@ -160,6 +202,24 @@ function parseModelsByAgent(value: string): Readonly<Record<string, string>> | n
   }
   return mapping;
 }
+interface AgentSettings {
+  readonly model?: string;
+  readonly modelsByAgent?: Readonly<Record<string, string>>;
+  readonly mcp?: Readonly<Record<string, string>>;
+}
+
+function agentSettings(settings: {
+  readonly model?: string;
+  readonly modelsByAgent?: Readonly<Record<string, string>>;
+  readonly mcp?: Readonly<Record<string, string>>;
+}): AgentSettings {
+  return {
+    ...(settings.model !== undefined ? { model: settings.model } : {}),
+    ...(settings.modelsByAgent !== undefined ? { modelsByAgent: settings.modelsByAgent } : {}),
+    ...(settings.mcp !== undefined ? { mcp: settings.mcp } : {}),
+  };
+}
+
 export function runProduction(options: ProductionRunOptions): Promise<number> {
   const auditFile = join(options.cwd, '.lou', 'runs', `run-${options.issueNumber}.jsonl`);
   return runTicket({
@@ -174,8 +234,7 @@ export function runProduction(options: ProductionRunOptions): Promise<number> {
     ask: terminalQuestion,
     out: options.out,
     dryRun: options.dryRun,
-    ...(options.model !== undefined ? { model: options.model } : {}),
-    ...(options.modelsByAgent !== undefined ? { modelsByAgent: options.modelsByAgent } : {}),
+    ...agentSettings(options),
   });
 }
 
@@ -191,8 +250,7 @@ export async function runTicket(env: RunEnvironment): Promise<number> {
   const steps = createOpenCodeSteps({
     runtime: env.runtime,
     workspace: env.workspace,
-    ...(env.model !== undefined ? { model: env.model } : {}),
-    ...(env.modelsByAgent !== undefined ? { modelsByAgent: env.modelsByAgent } : {}),
+    ...agentSettings(env),
   });
   if (env.dryRun) {
     return runDryRun(issue, env, steps);
@@ -206,8 +264,7 @@ export async function runTicket(env: RunEnvironment): Promise<number> {
     keeper: createTerminalKeeper({ ask: env.ask, out: env.out }),
     reviewer: new ReviewerAgent({
       runtime: env.runtime,
-      ...(env.model !== undefined ? { model: env.model } : {}),
-      ...(env.modelsByAgent !== undefined ? { modelsByAgent: env.modelsByAgent } : {}),
+      ...agentSettings(env),
     }),
     tests: env.tests,
     git: env.git,

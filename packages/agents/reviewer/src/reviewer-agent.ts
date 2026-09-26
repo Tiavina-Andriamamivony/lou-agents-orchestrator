@@ -24,6 +24,7 @@ export interface ReviewerAgentOptions {
   readonly runtime: AgentRuntime;
   readonly model?: string;
   readonly modelsByAgent?: Readonly<Record<string, string>>;
+  readonly mcp?: Readonly<Record<string, string>>;
 }
 
 const VERDICT_PATTERN = /^VERDICT\s*:\s*(APPROVED|CHANGES_REQUESTED|BLOCKED)\s*$/im;
@@ -48,6 +49,7 @@ export class ReviewerAgent {
       instructions: buildReviewInstructions(request),
       workspace: request.workspace,
       ...withModel(this.options.modelsByAgent?.['reviewer'] ?? this.options.model),
+      ...(this.options.mcp !== undefined ? { mcp: this.options.mcp } : {}),
     });
     return parseReview(result.stdout);
   }
